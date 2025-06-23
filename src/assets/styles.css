@@ -1,0 +1,338 @@
+
+/* TMMNA Sales Compass - Custom Styles */
+
+/* Arabic Typography */
+body {
+  font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+/* Brand Colors */
+:root {
+  --teal-primary: #28C8A0;
+  --teal-hover: #20a085;
+  --navy-primary: #0F2D4E;
+  --navy-light: #1a3a5f;
+  --white-pure: #ffffff;
+  --gray-light: #f8f9fa;
+  --gray-medium: #6c757d;
+  --gray-border: #dee2e6;
+}
+
+/* Utility Classes */
+.brand-teal { 
+  background-color: var(--teal-primary) !important; 
+}
+
+.brand-navy { 
+  background-color: var(--navy-primary) !important; 
+}
+
+.text-teal { 
+  color: var(--teal-primary) !important; 
+}
+
+.text-navy { 
+  color: var(--navy-primary) !important; 
+}
+
+.border-teal { 
+  border-color: var(--teal-primary) !important; 
+}
+
+/* Custom Button Styles */
+.btn-teal {
+  background-color: var(--teal-primary);
+  border-color: var(--teal-primary);
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+}
+
+.btn-teal:hover,
+.btn-teal:focus {
+  background-color: var(--teal-hover);
+  border-color: var(--teal-hover);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 200, 160, 0.3);
+}
+
+/* Logo Styling */
+.logo {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, var(--teal-primary), var(--navy-primary));
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  margin: 40px auto;
+  box-shadow: 0 8px 24px rgba(40, 200, 160, 0.2);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--gray-border);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  padding: 12px 0 8px;
+}
+
+.bottom-nav .nav-item {
+  text-align: center;
+  color: var(--gray-medium);
+  text-decoration: none;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  cursor: pointer;
+  min-width: 0;
+  flex: 1;
+}
+
+.bottom-nav .nav-item:hover {
+  text-decoration: none;
+  color: var(--teal-primary);
+}
+
+.bottom-nav .nav-item.active {
+  color: var(--teal-primary);
+}
+
+.bottom-nav .nav-item i {
+  font-size: 20px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Merchant Cards */
+.merchant-card {
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: white;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.merchant-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* Package Cards */
+.package-card {
+  border: 2px solid var(--gray-border);
+  border-radius: 16px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.package-card:hover {
+  border-color: var(--teal-primary);
+  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.1);
+}
+
+.package-card.selected {
+  border-color: var(--teal-primary);
+  background-color: rgba(40, 200, 160, 0.05);
+  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.2);
+}
+
+.package-card i {
+  margin-bottom: 12px;
+  color: var(--teal-primary);
+}
+
+.package-card h6 {
+  font-weight: 600;
+  color: var(--navy-primary);
+  margin-bottom: 8px;
+}
+
+.package-card .text-teal {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Rating Stars */
+.rating-stars {
+  color: #ffc107;
+  margin-left: 2px;
+  font-size: 14px;
+}
+
+.rating-stars.text-muted {
+  color: #e9ecef !important;
+}
+
+/* Signature Pad */
+.signature-pad {
+  border: 2px dashed var(--gray-border);
+  border-radius: 12px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-light);
+  color: var(--gray-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signature-pad:hover {
+  border-color: var(--teal-primary);
+  background: rgba(40, 200, 160, 0.05);
+}
+
+/* Form Styling */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid var(--gray-border);
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--teal-primary);
+  box-shadow: 0 0 0 0.2rem rgba(40, 200, 160, 0.15);
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--navy-primary);
+  margin-bottom: 8px;
+}
+
+.form-select {
+  border-radius: 8px;
+  border: 1px solid var(--gray-border);
+  padding: 12px 16px;
+}
+
+/* Input Group Styling */
+.input-group-text {
+  background-color: var(--gray-light);
+  border-color: var(--gray-border);
+  color: var(--gray-medium);
+}
+
+/* File Upload Area */
+.border-dashed {
+  border-style: dashed !important;
+  border-width: 2px !important;
+  border-color: var(--gray-border) !important;
+  border-radius: 12px;
+  padding: 32px 16px;
+  background: var(--gray-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.border-dashed:hover {
+  border-color: var(--teal-primary) !important;
+  background: rgba(40, 200, 160, 0.05);
+}
+
+.border-dashed i {
+  color: var(--teal-primary);
+  margin-bottom: 12px;
+}
+
+/* Screen Transitions */
+.screen {
+  min-height: 100vh;
+  padding-bottom: 100px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .logo {
+    width: 100px;
+    height: 100px;
+    font-size: 24px;
+    margin: 32px auto;
+  }
+  
+  .package-card {
+    padding: 20px 12px;
+    min-height: 120px;
+  }
+  
+  .merchant-card {
+    margin-bottom: 12px;
+  }
+  
+  .bottom-nav .nav-item {
+    font-size: 10px;
+  }
+  
+  .bottom-nav .nav-item i {
+    font-size: 18px;
+  }
+}
+
+/* Arabic Text Improvements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--navy-primary);
+}
+
+p {
+  line-height: 1.6;
+}
+
+/* Social Login Buttons */
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-dark:hover {
+  background-color: #212529;
+  border-color: #212529;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Loading States (for future implementation) */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
