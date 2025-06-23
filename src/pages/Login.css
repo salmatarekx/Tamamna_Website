@@ -1,0 +1,35 @@
+
+/* Login Page Specific Styles */
+.login-screen {
+  min-height: 100vh;
+  background: var(--gray-light);
+  display: flex;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-image {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.2);
+}
+
+/* Social Login Buttons */
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-dark:hover {
+  background-color: #212529;
+  border-color: #212529;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}

@@ -1,0 +1,37 @@
+
+/* Merchants Page Specific Styles */
+.merchants-list {
+  margin-top: 16px;
+}
+
+.merchant-card {
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: white;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.merchant-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  border-color: var(--teal-primary);
+}
+
+/* Rating Stars */
+.rating-stars {
+  color: #ffc107;
+  margin-left: 2px;
+  font-size: 14px;
+}
+
+.rating-stars.text-muted {
+  color: #e9ecef !important;
+}
+
+@media (max-width: 768px) {
+  .merchant-card {
+    margin-bottom: 12px;
+  }
+}

@@ -1,0 +1,24 @@
+
+/* Merchant Detail Page Specific Styles */
+.merchant-detail-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.back-button {
+  color: var(--navy-primary);
+  text-decoration: none;
+  font-size: 18px;
+  margin-right: 12px;
+}
+
+.back-button:hover {
+  color: var(--teal-primary);
+}
+
+/* Input Group Styling */
+.input-group-text {
+  background-color: var(--gray-light);
+  border-color: var(--gray-border);
+  color: var(--gray-medium);
+}

@@ -1,0 +1,56 @@
+
+/* Packages Page Specific Styles */
+.packages-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Package Cards */
+.package-card {
+  border: 2px solid var(--gray-border);
+  border-radius: 16px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.package-card:hover {
+  border-color: var(--teal-primary);
+  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.1);
+  transform: translateY(-2px);
+}
+
+.package-card.selected {
+  border-color: var(--teal-primary);
+  background-color: rgba(40, 200, 160, 0.05);
+  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.2);
+}
+
+.package-card i {
+  margin-bottom: 12px;
+  color: var(--teal-primary);
+}
+
+.package-card h6 {
+  font-weight: 600;
+  color: var(--navy-primary);
+  margin-bottom: 8px;
+}
+
+.package-card .text-teal {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .package-card {
+    padding: 20px 12px;
+    min-height: 120px;
+  }
+}
