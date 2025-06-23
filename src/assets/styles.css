@@ -8,7 +8,7 @@ body {
   text-align: right;
 }
 
-/* Brand Colors - Updated for TMMNA */
+/* Brand Colors */
 :root {
   --teal-primary: #28C8A0;
   --teal-hover: #20a085;
@@ -18,9 +18,6 @@ body {
   --gray-light: #f8f9fa;
   --gray-medium: #6c757d;
   --gray-border: #dee2e6;
-  --success: #28a745;
-  --warning: #ffc107;
-  --danger: #dc3545;
 }
 
 /* Utility Classes */
@@ -64,24 +61,6 @@ body {
   box-shadow: 0 4px 12px rgba(40, 200, 160, 0.3);
 }
 
-.btn-outline-teal {
-  border: 2px solid var(--teal-primary);
-  color: var(--teal-primary);
-  background: transparent;
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 12px 24px;
-  transition: all 0.3s ease;
-}
-
-.btn-outline-teal:hover,
-.btn-outline-teal:focus {
-  background-color: var(--teal-primary);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(40, 200, 160, 0.3);
-}
-
 /* Logo Styling */
 .logo {
   width: 120px;
@@ -96,54 +75,6 @@ body {
   font-weight: bold;
   margin: 40px auto;
   box-shadow: 0 8px 24px rgba(40, 200, 160, 0.2);
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.logo-image {
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.2);
-}
-
-/* Dashboard Cards */
-.card {
-  border: none;
-  border-radius: 16px;
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-}
-
-.card-body {
-  padding: 24px 16px;
-}
-
-/* Dashboard Stats */
-.stats-card {
-  background: linear-gradient(135deg, var(--teal-primary), var(--navy-primary));
-  color: white;
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(40, 200, 160, 0.3);
-}
-
-.stats-card h3 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.stats-card p {
-  margin: 0;
-  opacity: 0.9;
 }
 
 /* Bottom Navigation */
@@ -200,7 +131,6 @@ body {
 .merchant-card:hover {
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   transform: translateY(-2px);
-  border-color: var(--teal-primary);
 }
 
 /* Package Cards */
@@ -221,7 +151,6 @@ body {
 .package-card:hover {
   border-color: var(--teal-primary);
   box-shadow: 0 4px 16px rgba(40, 200, 160, 0.1);
-  transform: translateY(-2px);
 }
 
 .package-card.selected {
@@ -331,35 +260,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* List Group Styling */
-.list-group-item {
-  border-radius: 12px !important;
-  margin-bottom: 8px;
-  transition: all 0.2s ease;
-}
-
-.list-group-item:hover {
-  transform: translateX(-2px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* Badge Styling */
-.badge {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 20px;
-}
-
-.bg-success {
-  background-color: var(--success) !important;
-}
-
-.bg-warning {
-  background-color: var(--warning) !important;
-  color: var(--navy-primary) !important;
-}
-
 /* Screen Transitions */
 .screen {
   min-height: 100vh;
@@ -375,8 +275,11 @@ body {
     padding-right: 16px;
   }
   
-  .logo-image {
-    max-width: 150px !important;
+  .logo {
+    width: 100px;
+    height: 100px;
+    font-size: 24px;
+    margin: 32px auto;
   }
   
   .package-card {
@@ -394,10 +297,6 @@ body {
   
   .bottom-nav .nav-item i {
     font-size: 18px;
-  }
-  
-  .card-body {
-    padding: 20px 12px;
   }
 }
 
@@ -427,32 +326,6 @@ p {
   border-color: #0d6efd;
 }
 
-/* Quick Action Buttons */
-.quick-action-btn {
-  border: 2px solid var(--teal-primary);
-  background: white;
-  color: var(--teal-primary);
-  border-radius: 16px;
-  padding: 24px 16px;
-  text-align: center;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: block;
-}
-
-.quick-action-btn:hover {
-  background: var(--teal-primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(40, 200, 160, 0.3);
-  text-decoration: none;
-}
-
-.quick-action-btn i {
-  display: block;
-  margin-bottom: 12px;
-}
-
 /* Loading States (for future implementation) */
 .loading {
   opacity: 0.6;
@@ -462,38 +335,4 @@ p {
 .spinner-border-sm {
   width: 1rem;
   height: 1rem;
-}
-
-/* Dashboard Enhancements */
-.dashboard-header {
-  background: linear-gradient(135deg, var(--teal-primary), var(--navy-primary));
-  color: white;
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  background: rgba(40, 200, 160, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-}
-
-.recent-activity {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.activity-item {
-  padding: 16px;
-  border-left: 3px solid var(--teal-primary);
-  margin-bottom: 12px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
