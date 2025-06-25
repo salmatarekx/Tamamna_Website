@@ -1,6 +1,4 @@
-
 import React from 'react';
-import './Dashboard.css';
 
 interface DashboardProps {
   onNavigate: (screen: string) => void;
@@ -8,113 +6,110 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   return (
-    <div className="container-fluid p-3">
-      <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="p-4 max-w-4xl mx-auto mt-8" dir="rtl">
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h4 className="text-navy mb-1">مرحباً بك في تممنا</h4>
-            <p className="text-muted mb-0">لوحة التحكم الرئيسية</p>
+            <h4 className="text-2xl font-bold text-gray-900 mb-1">مرحباً بك في تممنا</h4>
+            <p className="text-gray-600">الصفحه الرئيسية</p>
           </div>
-          <img 
-            src="/tmmna-logo.png" 
-            alt="TMMNA" 
-            style={{ width: '50px', height: 'auto' }}
-          />
+          
         </div>
       </div>
 
       {/* إحصائيات سريعة */}
-      <div className="row g-3 mb-4">
-        <div className="col-6">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body text-center">
-              <i className="fas fa-users text-teal fa-2x mb-2"></i>
-              <h5 className="text-navy mb-1">150</h5>
-              <small className="text-muted">إجمالي التجار</small>
-            </div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4 text-center">
+          <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span className="text-teal-600 text-xl">👥</span>
           </div>
+          <h5 className="text-xl font-bold text-gray-900 mb-1">150</h5>
+          <small className="text-gray-600">إجمالي التجار</small>
         </div>
-        <div className="col-6">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body text-center">
-              <i className="fas fa-clipboard-check text-teal fa-2x mb-2"></i>
-              <h5 className="text-navy mb-1">45</h5>
-              <small className="text-muted">زيارات اليوم</small>
-            </div>
+        <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4 text-center">
+          <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span className="text-teal-600 text-xl">✅</span>
           </div>
+          <h5 className="text-xl font-bold text-gray-900 mb-1">45</h5>
+          <small className="text-gray-600">زيارات اليوم</small>
         </div>
       </div>
 
-      <div className="row g-3 mb-4">
-        <div className="col-6">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body text-center">
-              <i className="fas fa-chart-line text-teal fa-2x mb-2"></i>
-              <h5 className="text-navy mb-1">85%</h5>
-              <small className="text-muted">معدل النجاح</small>
-            </div>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4 text-center">
+          <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span className="text-teal-600 text-xl">📈</span>
           </div>
+          <h5 className="text-xl font-bold text-gray-900 mb-1">85%</h5>
+          <small className="text-gray-600">معدل النجاح</small>
         </div>
-        <div className="col-6">
-          <div className="card h-100 border-0 shadow-sm">
-            <div className="card-body text-center">
-              <i className="fas fa-star text-warning fa-2x mb-2"></i>
-              <h5 className="text-navy mb-1">4.7</h5>
-              <small className="text-muted">متوسط التقييم</small>
-            </div>
+        <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4 text-center">
+          <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span className="text-yellow-600 text-xl">⭐</span>
           </div>
+          <h5 className="text-xl font-bold text-gray-900 mb-1">4.7</h5>
+          <small className="text-gray-600">متوسط التقييم</small>
         </div>
       </div>
 
-      {/* الإجراءات السريعة */}
-      <div className="mb-4">
-        <h6 className="text-navy mb-3">الإجراءات السريعة</h6>
-        <div className="row g-3">
-          <div className="col-6">
-            <button 
-              className="btn btn-outline-teal w-100 h-100 py-3"
-              onClick={() => onNavigate('merchants')}
-            >
-              <i className="fas fa-users fa-2x mb-2 d-block"></i>
-              <span>إدارة التجار</span>
-            </button>
-          </div>
-          <div className="col-6">
-            <button 
-              className="btn btn-outline-teal w-100 h-100 py-3"
-              onClick={() => onNavigate('visitReport')}
-            >
-              <i className="fas fa-plus-circle fa-2x mb-2 d-block"></i>
-              <span>زيارة جديدة</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* آخر الزيارات */}
-      <div className="mb-4">
-        <h6 className="text-navy mb-3">آخر الزيارات</h6>
-        <div className="list-group">
-          <div className="list-group-item border-0 bg-light mb-2 rounded">
-            <div className="d-flex justify-content-between align-items-center">
+      <div className="mb-6">
+        <h6 className="text-lg font-semibold text-gray-900 mb-4">آخر الزيارات</h6>
+        <div className="space-y-3">
+          <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4">
+            <div className="flex justify-between items-center">
               <div>
-                <h6 className="mb-1">متجر الأنوار</h6>
-                <small className="text-muted">منذ ساعتين</small>
+                <h6 className="font-medium text-gray-900 mb-1">متجر الأنوار</h6>
+                <small className="text-gray-600">منذ ساعتين</small>
               </div>
-              <span className="badge bg-success">مكتملة</span>
+              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">مكتملة</span>
             </div>
           </div>
-          <div className="list-group-item border-0 bg-light mb-2 rounded">
-            <div className="d-flex justify-content-between align-items-center">
+          <div className="bg-white rounded-lg shadow-md border border-gray-100 p-4">
+            <div className="flex justify-between items-center">
               <div>
-                <h6 className="mb-1">مؤسسة الرياض</h6>
-                <small className="text-muted">منذ 4 ساعات</small>
+                <h6 className="font-medium text-gray-900 mb-1">مؤسسة الرياض</h6>
+                <small className="text-gray-600">منذ 4 ساعات</small>
               </div>
-              <span className="badge bg-warning">قيد المراجعة</span>
+              <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">قيد المراجعة</span>
             </div>
           </div>
         </div>
       </div>
+      {/* دعم ومساعدة */}
+      <section id="support" className="mt-12 bg-white rounded-lg shadow-md border border-gray-100 p-6 text-center max-w-xl mx-auto">
+        <h6 className="text-lg font-semibold text-teal-700 mb-2 flex items-center justify-center gap-2">
+        <span>الدعم و المساعده</span>
+        </h6>
+        <div className="flex flex-col items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 text-gray-700 text-base">
+            <span className="bg-teal-100 text-teal-600 rounded-full p-2 flex items-center justify-center">
+              {/* Headphone icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 18v-6a9 9 0 0118 0v6" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 18a3 3 0 01-6 0v-3a3 3 0 016 0v3zM3 18a3 3 0 006 0v-3a3 3 0 00-6 0v3z" /></svg>
+            </span>
+            <span>اتصل بنا هاتفياً:</span>
+            <a href="tel:966500000000" className="text-teal-700 font-bold underline">+966 50 000 0000</a>
+          </div>
+        </div>
+        <div className="my-2 text-gray-500 font-semibold text-base flex items-center justify-center">
+          <span>أو</span>
+        </div>
+        <p className="text-gray-600 mb-4 text-sm">يمكنك التواصل مع الدعم عن طريق إرسال رسالة إلى البريد الإلكتروني. ستترد عليك خلال 24 ساعة.</p>
+        <form onSubmit={e => { e.preventDefault(); /* handle send */ }} className="flex flex-col gap-3">
+          <input
+            type="text"
+            placeholder="أرسل سؤالك هنا"
+            className="border border-gray-200 rounded px-3 py-2 text-right focus:outline-none focus:border-teal-500 text-sm"
+            dir="rtl"
+            required
+          />
+          <button type="submit" className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded transition-colors">
+            <span>إرسال</span>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m0 0l4-4m-4 4l4 4" /><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </button>
+        </form>
+      </section>
     </div>
   );
 };

@@ -1,6 +1,4 @@
-
 import React from 'react';
-import './BottomNav.css';
 
 interface BottomNavProps {
   currentScreen: string;
@@ -9,44 +7,56 @@ interface BottomNavProps {
 
 const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate }) => {
   return (
-    <div className="bottom-nav">
-      <div className="d-flex justify-content-around">
-        <a 
-          href="#" 
-          className={`nav-item ${currentScreen === 'dashboard' ? 'active' : ''}`}
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+      <div className="flex justify-around">
+        <button 
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors duration-200 ${
+            currentScreen === 'dashboard' 
+              ? 'text-teal-600 bg-teal-50' 
+              : 'text-gray-600 hover:text-teal-600'
+          }`}
           onClick={() => onNavigate('dashboard')}
         >
-          <div><i className="fas fa-home"></i></div>
-          <div>الرئيسية</div>
-        </a>
-        <a 
-          href="#" 
-          className={`nav-item ${currentScreen === 'merchants' ? 'active' : ''}`}
+          <div className="text-xl mb-1">🏠</div>
+          <div className="text-xs">الرئيسية</div>
+        </button>
+        <button 
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors duration-200 ${
+            currentScreen === 'merchants' 
+              ? 'text-teal-600 bg-teal-50' 
+              : 'text-gray-600 hover:text-teal-600'
+          }`}
           onClick={() => onNavigate('merchants')}
         >
-          <div><i className="fas fa-users"></i></div>
-          <div>التجار</div>
-        </a>
-        <a 
-          href="#" 
-          className={`nav-item ${currentScreen === 'visitReport' ? 'active' : ''}`}
+          <div className="text-xl mb-1">👥</div>
+          <div className="text-xs">التجار</div>
+        </button>
+        <button 
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors duration-200 ${
+            currentScreen === 'visitReport' 
+              ? 'text-teal-600 bg-teal-50' 
+              : 'text-gray-600 hover:text-teal-600'
+          }`}
           onClick={() => onNavigate('visitReport')}
         >
-          <div><i className="fas fa-plus-circle"></i></div>
-          <div>زيارة جديدة</div>
-        </a>
-        <a href="#" className="nav-item">
-          <div><i className="fas fa-map-marked-alt"></i></div>
-          <div>الخريطة</div>
-        </a>
-        <a 
-          href="#" 
-          className={`nav-item ${currentScreen === 'packages' ? 'active' : ''}`}
+          <div className="text-xl mb-1">➕</div>
+          <div className="text-xs">زيارة جديدة</div>
+        </button>
+        <button className="flex flex-col items-center py-2 px-3 rounded-lg text-gray-600 hover:text-teal-600 transition-colors duration-200">
+          <div className="text-xl mb-1">🗺️</div>
+          <div className="text-xs">الخريطة</div>
+        </button>
+        <button 
+          className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors duration-200 ${
+            currentScreen === 'packages' 
+              ? 'text-teal-600 bg-teal-50' 
+              : 'text-gray-600 hover:text-teal-600'
+          }`}
           onClick={() => onNavigate('packages')}
         >
-          <div><i className="fas fa-user-circle"></i></div>
-          <div>الملف الشخصي</div>
-        </a>
+          <div className="text-xl mb-1">👤</div>
+          <div className="text-xs">الملف الشخصي</div>
+        </button>
       </div>
     </div>
   );

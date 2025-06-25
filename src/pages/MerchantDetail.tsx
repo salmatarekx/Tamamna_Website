@@ -1,70 +1,146 @@
-
-import React from 'react';
-import './MerchantDetail.css';
+import React, { useState } from 'react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from '../components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
 
 interface MerchantDetailProps {
   onNavigate: (screen: string) => void;
 }
 
+const activityOptions = [
+  { value: 'تجارة التجزئة', label: 'تجارة التجزئة' },
+  { value: 'تجارة الجملة', label: 'تجارة الجملة' },
+  { value: 'خدمات', label: 'خدمات' },
+  { value: 'تصنيع', label: 'تصنيع' },
+];
+
 const MerchantDetail: React.FC<MerchantDetailProps> = ({ onNavigate }) => {
+  const navigate = useNavigate();
+  const [selectedActivity, setSelectedActivity] = useState(activityOptions[0].value);
+  const [merchant, setMerchant] = useState({
+    tradeName: 'متجر الأنوار',
+    idOrCR: '1234567890',
+    license: 'RL-2024-001234',
+    phone: '0501234567',
+  });
+
   return (
-    <div className="container-fluid p-3">
-      <div className="d-flex align-items-center mb-3">
+    <div className="p-4 max-w-2xl mx-auto" dir="rtl">
+      <div className="flex items-center mb-6">
         <button 
-          className="btn btn-link p-0 me-3"
+          className="p-2 mr-3 text-gray-600 hover:text-teal-600 transition-colors duration-200"
           onClick={() => onNavigate('merchants')}
         >
-          <i className="fas fa-arrow-right text-navy"></i>
+          <span className="text-xl">←</span>
         </button>
-        <h5 className="mb-0">تفاصيل التاجر</h5>
+        <h5 className="text-xl font-semibold text-gray-900">تفاصيل التاجر</h5>
       </div>
       
-      <form>
-        <div className="mb-3">
-          <label className="form-label">اسم المنشأة</label>
-          <input type="text" className="form-control" defaultValue="متجر الأنوار" />
+      <form className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">اسم المنشأة</label>
+          <input 
+            type="text" 
+            className="w-full px-3 py-2 border border-[#1C8C81] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81]" 
+            value={merchant.tradeName}
+            onChange={e => setMerchant(m => ({ ...m, tradeName: e.target.value }))}
+          />
         </div>
         
-        <div className="mb-3">
-          <label className="form-label">رقم الهوية</label>
-          <input type="text" className="form-control" defaultValue="1234567890" />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">رقم الهوية أو السجل التجاري</label>
+          <input 
+            type="text" 
+            className="w-full px-3 py-2 border border-[#1C8C81] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81]" 
+            value={merchant.idOrCR}
+            onChange={e => setMerchant(m => ({ ...m, idOrCR: e.target.value }))}
+          />
         </div>
         
-        <div className="mb-3">
-          <label className="form-label">رقم الهاتف</label>
-          <input type="tel" className="form-control" defaultValue="0501234567" />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">رقم الرخصه</label>
+          <input 
+            type="text" 
+            className="w-full px-3 py-2 border border-[#1C8C81] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81]" 
+            value={merchant.license}
+            onChange={e => setMerchant(m => ({ ...m, license: e.target.value }))}
+          />
         </div>
         
-        <div className="mb-3">
-          <label className="form-label">البريد الإلكتروني</label>
-          <input type="email" className="form-control" defaultValue="info@alanwar.com" />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">رقم الهاتف</label>
+          <input 
+            type="tel" 
+            className="w-full px-3 py-2 border border-[#1C8C81] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81]" 
+            value={merchant.phone}
+            onChange={e => setMerchant(m => ({ ...m, phone: e.target.value }))}
+          />
         </div>
         
-        <div className="mb-3">
-          <label className="form-label">العنوان</label>
-          <div className="input-group">
-            <input type="text" className="form-control" defaultValue="الرياض، المملكة العربية السعودية" />
-            <span className="input-group-text">
-              <i className="fas fa-map-marker-alt"></i>
-            </span>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">البريد الإلكتروني</label>
+          <input 
+            type="email" 
+            className="w-full px-3 py-2 border border-[#1C8C81] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81]" 
+            defaultValue="info@alanwar.com" 
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">العنوان</label>
+          <div className="relative">
+            <input 
+              type="text" 
+              className="w-full px-3 py-2 pr-10 border border-[#1C8C81] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81]" 
+              defaultValue="الرياض، المملكة العربية السعودية" 
+            />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              📍
+            </div>
           </div>
         </div>
         
-        <div className="mb-3">
-          <label className="form-label">نوع النشاط التجاري</label>
-          <select className="form-select">
-            <option>تجارة التجزئة</option>
-            <option>تجارة الجملة</option>
-            <option>خدمات</option>
-            <option>تصنيع</option>
-          </select>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">نوع النشاط التجاري</label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="w-full px-3 py-2 border border-[#1C8C81] rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-[#1C8C81] focus:border-[#1C8C81] appearance-none flex items-center justify-between bg-white"
+                type="button"
+              >
+                <span>{selectedActivity}</span>
+                <svg className="ml-2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="center" 
+              className="w-full min-w-[180px] max-w-[320px] sm:max-w-[320px] sm:w-auto sm:mx-0 mx-2 left-0 right-0 sm:left-auto sm:right-auto rounded-xl shadow-lg border border-gray-200 bg-white p-2 z-50"
+              style={{ boxSizing: 'border-box' }}
+            >
+              <DropdownMenuLabel>نوع النشاط التجاري</DropdownMenuLabel>
+              {activityOptions.map(option => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onSelect={() => setSelectedActivity(option.value)}
+                  className={selectedActivity === option.value ? 'bg-gray-400 text-white' : ''}
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
-        <div className="d-grid gap-2">
-          <button type="button" className="btn btn-teal">حفظ التغييرات</button>
+        <div className="space-y-3 pt-4">
           <button 
             type="button" 
-            className="btn btn-outline-secondary"
+            className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors duration-200"
+            onClick={() => navigate('/visitreport', { state: merchant })}
+          >
+            انشاء زياره
+          </button>
+          <button 
+            type="button" 
+            className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200"
             onClick={() => onNavigate('merchants')}
           >
             إلغاء
