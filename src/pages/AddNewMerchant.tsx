@@ -42,7 +42,7 @@ const AddNewMerchant: React.FC = () => {
     }, 2000);
   };
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-full";
+  const inputClass = "w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal";
   const inputStyle = { backgroundColor: '#d6f1e9' };
 
   return (
@@ -162,7 +162,7 @@ const AddNewMerchant: React.FC = () => {
             </div>
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">متطلبات التاجر</label>
-              <textarea name="requirements" value={form.requirements} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-2xl" style={inputStyle} placeholder="متطلبات التاجر" />
+              <textarea name="requirements" value={form.requirements} onChange={handleFormChange} className="w-full px-3 py-2 border border-gold rounded-2xl bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal" style={inputStyle} placeholder="متطلبات التاجر" />
             </div>
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">رفع صور (واجهة المحل، بطاقة السجل، الهوية إلخ)</label>
@@ -175,6 +175,13 @@ const AddNewMerchant: React.FC = () => {
               type="submit"
             >
               حفظ
+            </button>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-full font-bold hover:bg-blue-600 transition-colors duration-200"
+              type="button"
+              onClick={() => navigate('/add-branch', { state: { vendor: { tradeName: form.tradeName, idOrCR: form.idOrCR } } })}
+            >
+              إضافة فرع جديد
             </button>
             <button
               className="bg-gray-200 text-gray-700 px-4 py-2 rounded-full font-bold hover:bg-gray-300 transition-colors duration-200"

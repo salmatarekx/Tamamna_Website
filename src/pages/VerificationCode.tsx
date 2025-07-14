@@ -52,7 +52,7 @@ const VerificationCode: React.FC = () => {
             تم إرسال رابط الدفع إلى واتساب الخاص بك. بعد إتمام الدفع، ستصلك رسالة تحتوي على رمز التحقق. يرجى إدخال الرمز أدناه لإكمال الاشتراك.
           </p>
           <div className="flex justify-center mb-6 w-full">
-            <div className="flex justify-center items-center gap-3 border-2 border-[#1C8C81] rounded-xl px-4 py-4 bg-white mx-auto" style={{maxWidth: '220px'}}>
+            <div className="flex justify-center items-center gap-3 border-2 border-gold rounded-xl px-4 py-4 bg-brand-white mx-auto" style={{maxWidth: '220px'}}>
               {code.map((digit, idx) => (
                 <input
                   key={idx}
@@ -79,7 +79,7 @@ const VerificationCode: React.FC = () => {
             </button>
           </div>
           <button
-            className="w-full bg-[#0CA1A2] text-white py-3 rounded-xl text-base sm:text-lg font-bold hover:bg-[#0FA697] transition-colors duration-200"
+            className="w-full bg-gold text-brand-black py-3 rounded-xl text-base sm:text-lg font-bold hover:bg-gold-dark hover:text-brand-white transition-colors duration-200"
             onClick={() => navigate('/subscription-confirmation')}
           >
             تأكيد الرمز

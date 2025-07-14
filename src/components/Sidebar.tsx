@@ -21,7 +21,7 @@ const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <div className="relative bg-white w-72 max-w-full h-full shadow-xl flex flex-col">
         {/* User Info */}
         <div className="flex flex-col items-center py-6">
-          <div className="w-16 h-16 rounded-full bg-[#24BFA3] flex items-center justify-center mb-2">
+          <div className="w-16 h-16 rounded-full bg-gold flex items-center justify-center mb-2">
             <FaUser className="text-3xl text-white" />
           </div>
           <div className="font-bold text-lg text-[#153959]">اسم المستخدم</div>
@@ -33,7 +33,7 @@ const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             {navItems.map(item => (
               <li key={item.label}>
                 <button
-                  className="flex items-center gap-3 w-full text-[#153959] text-base font-bold py-2 px-2 rounded transition-colors hover:bg-[#24BFA3] hover:text-white focus:bg-[#24BFA3] focus:text-white"
+                  className="flex items-center gap-3 w-full text-[#153959] text-base font-bold py-2 px-2 rounded transition-colors hover:bg-gold-light hover:text-brand-black focus:bg-gold-light focus:text-brand-black"
                   onClick={() => {
                     if (item.label === 'الدعم و المساعده') {
                       navigate('/dashboard');

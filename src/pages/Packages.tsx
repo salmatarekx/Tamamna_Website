@@ -49,15 +49,15 @@ const Packages: React.FC = () => {
               key={pkg.id}
               className={`p-4 sm:p-5 cursor-pointer transition-all border ${
                 selectedPackage === pkg.id
-                  ? 'border-[#2EC4B6] bg-[#E6FAF8] shadow-md'
-                  : 'border-[#F5F5F5] bg-white hover:border-[#2EC4B6]'
+                  ? 'border-gold bg-[#E6FAF8] shadow-md'
+                  : 'border-gold bg-brand-white hover:border-gold-dark'
               }`}
               onClick={() => setSelectedPackage(pkg.id)}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-lg font-bold text-[#22314A]">{pkg.name}</span>
                 {pkg.badge && (
-                  <span className="bg-[#2EC4B6] text-white text-xs font-bold rounded px-3 py-1">{pkg.price}</span>
+                  <span className="bg-gold text-brand-white text-xs font-bold rounded px-3 py-1">{pkg.price}</span>
                 )}
               </div>
               {pkg.badge ? (
@@ -69,7 +69,7 @@ const Packages: React.FC = () => {
           ))}
         </div>
         <button
-          className="w-full bg-[#2EC4B6] text-white py-3 rounded-xl text-base sm:text-lg font-bold hover:bg-[#25b3a6] transition-colors duration-200"
+          className="w-full bg-gold text-brand-black py-3 rounded-xl text-base sm:text-lg font-bold hover:bg-gold-dark hover:text-brand-white transition-colors duration-200"
           disabled={!selectedPackage}
           onClick={() => navigate('/verification-code')}
         >

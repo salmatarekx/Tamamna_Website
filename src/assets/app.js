@@ -4,6 +4,9 @@
  * This file contains placeholder functions for app interactivity
  */
 
+const API_URL = import.meta.env ? import.meta.env.VITE_API_URL : (window.API_URL || 'http://127.0.0.1:8000');
+// Use API_URL for all API requests, e.g. fetch(`${API_URL}/your-endpoint`)
+
 class TMMNAApp {
   constructor() {
     this.currentScreen = 'login';

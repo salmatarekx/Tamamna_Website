@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Logo1 from '../assets/Logo1.png';
+import { useNavigate } from 'react-router-dom';
+import Logo11 from '../assets/Logo11.png';
+import { API_URL } from '../lib/utils';
 
 const GoogleIcon = () => (
   <svg className="inline-block mr-2 align-middle" width="20" height="20" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.7 33.1 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.4l6.4-6.4C34.3 5.1 29.4 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.5 20-21 0-1.3-.1-2.7-.3-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.5 16.1 19.4 13 24 13c2.7 0 5.2.9 7.2 2.4l6.4-6.4C34.3 5.1 29.4 3 24 3 15.1 3 7.6 8.7 6.3 14.7z"/><path fill="#FBBC05" d="M24 45c5.4 0 10.3-1.8 14.1-4.9l-6.5-5.3C29.6 36.7 26.9 37.5 24 37.5c-6.1 0-10.7-4.1-12.5-9.6l-7 5.4C7.6 39.3 15.1 45 24 45z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.7c-1.1 3.1-4.1 5.5-7.7 5.5-2.2 0-4.2-.7-5.7-2l-7 5.4C15.1 39.3 19.4 45 24 45c10.5 0 20-7.5 20-21 0-1.3-.1-2.7-.3-4z"/></g></svg>
@@ -19,6 +21,9 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Hide TopBar when Login component mounts
@@ -26,7 +31,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     if (topBar) {
       topBar.style.display = 'none';
     }
-    
     // Show TopBar when Login component unmounts
     return () => {
       if (topBar) {
@@ -35,66 +39,83 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     };
   }, []);
 
+  const handleLoginClick = async () => {
+    setError('');
+    try {
+      const response = await fetch(`${API_URL}/api/agent/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+      if (response.ok && data.token) {
+        localStorage.setItem('agent_token', data.token);
+        onLogin(username);
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'فشل تسجيل الدخول');
+      }
+    } catch (err) {
+      setError('حدث خطأ أثناء الاتصال بالخادم');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 md:p-8" dir="rtl">
-      <div className="w-full max-w-md md:max-w-lg bg-white md:rounded-2xl shadow-lg md:shadow-xl p-4 sm:p-8 md:p-10">
+    <div className="min-h-screen bg-brand-white flex items-center justify-center p-4 sm:p-6 md:p-8" dir="rtl">
+      <div className="w-full max-w-md md:max-w-lg bg-brand-white md:rounded-2xl shadow-lg md:shadow-xl p-4 sm:p-8 md:p-10">
         <div className="text-center mb-8">
           <div className="mb-6">
             <img
-              src={Logo1}
-              alt="TMMNA Logo"
+              src={Logo11}
+              alt="Logo11"
               className="mx-auto rounded-2xl shadow-lg"
               style={{ width: '128px', height: '128px', objectFit: 'contain' }}
             />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">مرحباً بك في تممنا</h2>
-          <p className="text-gray-600 text-base md:text-lg">تسجيل الدخول إلى حسابك</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-black mb-2">مرحباً بك في جولد ستيشن</h2>
+          <p className="text-brand-green text-base md:text-lg">تسجيل الدخول إلى حسابك</p>
         </div>
-
-        <form className="space-y-4">
+        {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded text-center font-bold">{error}</div>}
+        <form className="space-y-4" onSubmit={e => { e.preventDefault(); handleLoginClick(); }}>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">اسم المستخدم</label>
+            <label className="block text-sm font-bold text-brand-black mb-2">اسم المستخدم</label>
             <input 
               type="text" 
-              className="w-full px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-base md:text-lg"
-              style={{ backgroundColor: '#d6f1e9' }}
+              className="w-full px-3 py-2 border border-gold rounded-full focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent text-base md:text-lg"
+              style={{ backgroundColor: '#F6E7B2' }}
               placeholder="أدخل اسم المستخدم" 
               value={username}
               onChange={e => setUsername(e.target.value)}
             />
           </div>
-          
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">كلمة المرور</label>
+            <label className="block text-sm font-bold text-brand-black mb-2">كلمة المرور</label>
             <input 
               type="password" 
-              className="w-full px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-gray-100 text-base md:text-lg"
+              className="w-full px-3 py-2 border border-gold rounded-full focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent bg-gold-light text-base md:text-lg"
               placeholder="أدخل كلمة المرور" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
             />
           </div>
-          
           <div className="text-center">
-            <a href="#" className="text-sm font-bold text-teal-600 hover:text-teal-500">نسيت كلمة المرور؟</a>
+            <a href="#" className="text-sm font-bold text-gold hover:text-gold-dark">نسيت كلمة المرور؟</a>
           </div>
-          
           <button 
-            type="button" 
-            className="w-full bg-teal-600 text-white py-2 px-4 rounded-full hover:bg-teal-700 transition-colors duration-200 text-base md:text-lg"
-            onClick={() => onLogin(username)}
+            type="submit" 
+            className="w-full bg-gold text-brand-black py-2 px-4 rounded-full hover:bg-gold-dark hover:text-brand-white transition-colors duration-200 text-base md:text-lg"
           >
             تسجيل الدخول
           </button>
-          
-          <div className="text-center text-gray-500 text-sm">أو</div>
-          
+          <div className="text-center text-brand-green text-sm">أو</div>
           <div className="space-y-3">
-            <button type="button" className="w-full border border-red-500 text-red-500 py-2 px-4 rounded-full hover:bg-red-500 hover:text-white transition-colors duration-200 text-base md:text-lg">
+            <button type="button" className="w-full border border-red-500 text-red-500 py-2 px-4 rounded-full hover:bg-red-500 hover:text-brand-white transition-colors duration-200 text-base md:text-lg">
               <GoogleIcon />الدخول بـ Google
             </button>
-            <button type="button" className="w-full border border-gray-800 text-gray-800 py-2 px-4 rounded-full hover:bg-gray-800 hover:text-white transition-colors duration-200 text-base md:text-lg">
+            <button type="button" className="w-full border border-brand-black text-brand-black py-2 px-4 rounded-full hover:bg-brand-black hover:text-brand-white transition-colors duration-200 text-base md:text-lg">
               <AppleIcon />الدخول بـ Apple
             </button>
-            <button type="button" className="w-full border border-blue-600 text-blue-600 py-2 px-4 rounded-full hover:bg-blue-600 hover:text-white transition-colors duration-200 text-base md:text-lg">
+            <button type="button" className="w-full border border-brand-green text-brand-green py-2 px-4 rounded-full hover:bg-brand-green hover:text-brand-white transition-colors duration-200 text-base md:text-lg">
               <FacebookIcon />الدخول بـ Facebook
             </button>
           </div>
