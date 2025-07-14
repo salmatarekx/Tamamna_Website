@@ -27,19 +27,19 @@ const renderStars = (ratingValue: number) => {
 const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
   const [search, setSearch] = useState('');
   const [searchCategory, setSearchCategory] = useState<string>('');
+  const [vendors, setVendors] = useState([]);
   const navigate = useNavigate();
-  const merchants = [
-    { id: 1, name: 'متجر الأنوار', phone: '0501234567', idOrCR: '1234567890', rating: 4.5 },
-    { id: 2, name: 'مؤسسة الرياض التجارية', phone: '0507654321', idOrCR: '2345678901', rating: 4.2 },
-    { id: 3, name: 'شركة الخليج للتجارة', phone: '0509876543', idOrCR: '3456789012', rating: 4.8 }
-  ];
 
   useEffect(() => {
-    fetch(`${API_URL}/api/vendors`)
+    const token = localStorage.getItem('agent_token');
+    fetch(`${API_URL}/api/vendors`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then(res => res.json())
       .then(data => {
-        console.log('Fetched vendors:', data);
-        // You can set state here to display vendors
+        setVendors(data.data || []);
       })
       .catch(err => {
         console.error('Error fetching vendors:', err);
@@ -51,7 +51,7 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
   };
 
   // Filter merchants based on search and category
-  const filteredMerchants = merchants.filter(merchant => {
+  const filteredMerchants = vendors.filter(merchant => {
     if (!search) return true;
     const value = merchant[searchCategory] || '';
     return value.includes(search);
@@ -117,7 +117,7 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
         </button>
       </div>
       <div className="space-y-3">
-        {filteredMerchants.map(merchant => (
+        {vendors.map(merchant => (
           <div 
             key={merchant.id} 
             className="bg-brand-white p-4 rounded-lg shadow-sm border border-brand-green cursor-pointer transition-shadow duration-200 hover:bg-gold-light hover:text-brand-green hover:shadow-lg"
@@ -125,15 +125,20 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
           >
             <div className="flex justify-between items-center">
               <div className="flex-1">
-                <h6 className="font-semibold text-brand-green mb-2">{merchant.name}</h6>
-                <p className="text-gold-dark mb-2 flex items-center">
-                  <span className="mr-2">📞</span>
-                  {merchant.phone}
-                </p>
-                <div className="flex items-center">
-                  {renderStars(merchant.rating)}
-                  <span className="mr-2 text-gold-dark">{merchant.rating}</span>
+                <h6 className="font-semibold text-brand-green mb-2">{merchant.commercial_name || merchant.name}</h6>
+                <div className="flex items-center mb-2">
+                  <span className="mr-2 text-gold">📞</span>
+                  <span className="text-gold font-bold">{merchant.mobile}</span>
                 </div>
+                <div className="flex items-center mb-2">
+                  <span className="mr-2 text-blue-600">📍</span>
+                  <span className="text-gray-700">{merchant.city}</span>
+                </div>
+                {merchant.rating !== undefined && merchant.rating !== null && (
+                  <div className="flex items-center">
+                    <span className="mr-2 text-gold-dark">⭐ {merchant.rating}</span>
+                  </div>
+                )}
               </div>
               <div className="text-gold-light">
                 <span className="text-lg">›</span>

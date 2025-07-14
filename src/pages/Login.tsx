@@ -45,7 +45,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const response = await fetch(`${API_URL}/api/agent/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ email:username, password })
       });
       const data = await response.json();
       if (response.ok && data.token) {
