@@ -47,7 +47,36 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
   }, []);
 
   const handleSearch = () => {
-    alert(`بحث عن: ${search}`);
+    if (!search || !searchCategory) {
+      // إذا لم يوجد بحث، أعد كل التجار
+      const token = localStorage.getItem('agent_token');
+      fetch(`${API_URL}/api/vendors`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setVendors(data.data || []);
+        })
+        .catch(err => {
+          console.error('Error fetching vendors:', err);
+        });
+      return;
+    }
+    const token = localStorage.getItem('agent_token');
+    fetch(`${API_URL}/api/vendors?search=${encodeURIComponent(search)}&search_by=${encodeURIComponent(searchCategory)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setVendors(data.data || []);
+      })
+      .catch(err => {
+        console.error('Error searching vendors:', err);
+      });
   };
 
   // Filter merchants based on search and category
@@ -66,6 +95,7 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
             type="text" 
             value={search}
             onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
             className="w-full min-w-[180px] px-8 py-3 pr-12 border border-gold rounded-full focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
             placeholder="ابحث..."
               aria-label="بحث"
