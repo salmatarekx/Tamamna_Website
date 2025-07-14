@@ -98,7 +98,7 @@ const AddBranch: React.FC = () => {
       alert('يجب اختيار تاجر لإضافة فرع');
       return;
     }
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       vendor_id: vendor.idOrCR || vendor.id, // Adjust as needed
       name: form.branchName,
       mobile: form.phone,
@@ -164,7 +164,7 @@ const AddBranch: React.FC = () => {
         <h3 className="text-lg font-bold mb-4 text-teal-700">إضافة فرع جديد</h3>
         {vendor && (
           <div className="mb-4 p-2 bg-gold-light rounded text-brand-green font-bold text-center">
-            التاجر: {vendor.tradeName || ''}
+            التاجر: {vendor.commercial_name || vendor.tradeName || vendor.owner_name || ''}
           </div>
         )}
         <form className="space-y-3" onSubmit={handleSave}>
