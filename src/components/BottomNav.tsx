@@ -42,10 +42,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate }) => {
           <div className="text-xl mb-1">➕</div>
           <div className="text-xs">زيارة جديدة</div>
         </button>
-        <button className="flex flex-col items-center py-2 px-3 rounded-lg text-gray-600 hover:text-teal-600 transition-colors duration-200">
-          <div className="text-xl mb-1">🗺️</div>
-          <div className="text-xs">الخريطة</div>
-        </button>
+      
         <button 
           className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors duration-200 ${
             currentScreen === 'packages' 

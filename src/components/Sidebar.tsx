@@ -5,9 +5,7 @@ import { FaUser, FaHome, FaMapMarkedAlt, FaUsers, FaSignOutAlt, FaRegQuestionCir
 const navItems = [
   { label: 'الرئيسية', icon: <FaHome />, path: '/dashboard' },
   { label: 'الملف الشخصي', icon: <FaUser />, path: '/profile' },
-  { label: 'الخريطة', icon: <FaMapMarkedAlt />, path: '/map' },
   { label: 'التجار', icon: <FaUsers />, path: '/merchants' },
-  { label: 'الدعم و المساعده', icon: <FaRegQuestionCircle />, path: '/dashboard#support' },
 ];
 
 const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -24,8 +22,7 @@ const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="w-16 h-16 rounded-full bg-gold flex items-center justify-center mb-2">
             <FaUser className="text-3xl text-white" />
           </div>
-          <div className="font-bold text-lg text-[#153959]">اسم المستخدم</div>
-          <div className="text-[#24BFA3] text-sm">user@email.com</div>
+         
         </div>
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6">

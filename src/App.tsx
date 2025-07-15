@@ -16,6 +16,7 @@ import SubscriptionConfirmation from './pages/SubscriptionConfirmation';
 import MerchantDetail from './pages/MerchantDetail';
 import UserProfileInfo from './pages/UserProfileInfo';
 import AddBranch from './pages/AddBranch';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -35,18 +36,19 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route path="/dashboard" element={<Dashboard onNavigate={() => {}} />} />
-          <Route path="/merchants" element={<Merchants onNavigate={() => {}} />} />
-          <Route path="/merchant/:id" element={<MerchantDetail onNavigate={() => {}} />} />
-          <Route path="/add-merchant" element={<AddNewMerchant />} />
-          <Route path="/visitreport" element={<VisitReport />} />
-          <Route path="/packages" element={<Packages />} />
-          <Route path="/verification-code" element={<VerificationCode />} />
-          <Route path="/subscription-confirmation" element={<SubscriptionConfirmation />} />
-          <Route path="/profile" element={<UserProfileInfo />} />
-          <Route path="/add-branch" element={<AddBranch />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+            <Route path="/dashboard" element={<Dashboard onNavigate={() => {}} />} />
+            <Route path="/merchants" element={<Merchants onNavigate={() => {}} />} />
+            <Route path="/merchant/:id" element={<MerchantDetail onNavigate={() => {}} />} />
+            <Route path="/add-merchant" element={<AddNewMerchant />} />
+            <Route path="/visitreport" element={<VisitReport />} />
+            <Route path="/packages" element={<Packages />} />
+            <Route path="/verification-code" element={<VerificationCode />} />
+            <Route path="/subscription-confirmation" element={<SubscriptionConfirmation />} />
+            <Route path="/profile" element={<UserProfileInfo />} />
+            <Route path="/add-branch" element={<AddBranch />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+   
         </Routes>
       </div>
     </>

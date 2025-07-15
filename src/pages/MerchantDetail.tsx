@@ -158,14 +158,20 @@ const MerchantDetail: React.FC<MerchantDetailProps> = ({ onNavigate }) => {
           <button 
             type="button" 
             className="w-full bg-gold text-brand-black py-3 px-4 rounded-lg hover:bg-gold-dark hover:text-brand-white transition-colors duration-200"
-            onClick={() => navigate('/visitreport', { state: merchant })}
+            onClick={() => {
+              if (!selectedBranch) {
+                alert('يرجى اختيار فرع أولاً');
+                return;
+              }
+              navigate('/visitreport', { state: { merchant, branch: selectedBranch } });
+            }}
           >
             انشاء زياره
           </button>
           <button 
             type="button" 
             className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-            onClick={() => navigate('/add-branch', { state: { vendor: { id: merchant.id, idOrCR: merchant.idOrCR || merchant.id_or_cr || merchant.id, tradeName: merchant.commercial_name || merchant.tradeName } } })}
+            onClick={() => navigate('/add-branch', { state: { vendor: { id: merchant.id, idOrCR: merchant.idOrCR || merchant.id, tradeName: merchant.commercial_name || merchant.tradeName } } })}
           >
             إضافة فرع جديد
           </button>
