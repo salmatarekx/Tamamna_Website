@@ -1,115 +1,132 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {
   onNavigate: (screen: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
+  const [summary, setSummary] = useState<any>(null);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const token = localStorage.getItem('agent_token');
+    setLoading(true);
+    fetch(`${import.meta.env.VITE_API_URL}/api/home/summary`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setSummary(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('فشل في جلب البيانات');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="p-8 text-center text-brand-green">جاري تحميل البيانات...</div>;
+  if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+
   return (
     <div className="p-4 max-w-4xl mx-auto mt-8" dir="rtl">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h4 className="text-2xl font-bold text-brand-green mb-1">مرحباً بك في جولد ستيشن</h4>
-            <p className="text-brand-green">الصفحه الرئيسية</p>
+            <h4 className="text-2xl font-bold text-brand-green mb-1">مرحباً بك {summary?.agent?.details?.name ? `، ${summary.agent.details.name}` : ''}</h4>
+            <p className="text-brand-green">الصفحة الرئيسية</p>
           </div>
-          
         </div>
       </div>
 
-      {/* إحصائيات سريعة */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center">
-          <div className="w-12 h-12 bg-gold-light rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-gold text-xl">👥</span>
-          </div>
-          <h5 className="text-xl font-bold text-brand-green mb-1">150</h5>
-          <small className="text-brand-green">إجمالي التجار</small>
+      {/* كل الإحصائيات في صف واحد */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">👥</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.vendor_count ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">عدد التجار</span>
         </div>
-        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center">
-          <div className="w-12 h-12 bg-gold-light rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-gold text-xl">✅</span>
-          </div>
-          <h5 className="text-xl font-bold text-brand-green mb-1">45</h5>
-          <small className="text-brand-green">زيارات اليوم</small>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">��</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.branch_count ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">عدد الفروع</span>
+        </div>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">⭐</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.avg_vendor_rating ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">متوسط تقييم التجار</span>
+        </div>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">✅</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.visits_today ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">زيارات اليوم</span>
+        </div>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">🏬</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.agent?.branches_count ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">فروع المندوب</span>
+        </div>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">📝</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.agent?.visits_count ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">زيارات المندوب</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center">
-          <div className="w-12 h-12 bg-gold-light rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-gold text-xl">📈</span>
-          </div>
-          <h5 className="text-xl font-bold text-brand-green mb-1">85%</h5>
-          <small className="text-brand-green">معدل النجاح</small>
-        </div>
-        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center">
-          <div className="w-12 h-12 bg-gold-light rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-gold text-xl">⭐</span>
-          </div>
-          <h5 className="text-xl font-bold text-brand-green mb-1">4.7</h5>
-          <small className="text-brand-green">متوسط التقييم</small>
-        </div>
-      </div>
-
-
-      {/* آخر الزيارات */}
-      <div className="mb-6">
-        <h6 className="text-lg font-semibold text-brand-green mb-4">آخر الزيارات</h6>
-        <div className="space-y-3">
-          <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h6 className="font-medium text-brand-green mb-1">متجر الأنوار</h6>
-                <small className="text-brand-green">منذ ساعتين</small>
-              </div>
-              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">مكتملة</span>
+      {/* بيانات آخر تاجر */}
+      <div className="mb-8">
+        <h6 className="text-lg font-semibold text-brand-green mb-4">أحدث تاجر</h6>
+        {summary?.latest_vendor ? (
+          <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1">
+              <div className="font-bold text-xl text-gold mb-2">{summary.latest_vendor.commercial_name || summary.latest_vendor.owner_name}</div>
+              <div className="text-brand-green mb-1">رقم السجل التجاري: {summary.latest_vendor.commercial_registration_number}</div>
+              <div className="text-brand-green mb-1">الجوال: {summary.latest_vendor.mobile}</div>
+              <div className="text-brand-green mb-1">المدينة: {summary.latest_vendor.city} - {summary.latest_vendor.district}</div>
+              <div className="text-brand-green mb-1">البريد الإلكتروني: {summary.latest_vendor.email}</div>
+              <div className="text-brand-green mb-1">نوع النشاط: {summary.latest_vendor.activity_type}</div>
+              <div className="text-brand-green mb-1">تاريخ الإنشاء: {summary.latest_vendor.created_at?.split('T')[0]}</div>
+              <div className="text-brand-green mb-1">ملاحظات: {summary.latest_vendor.notes}</div>
             </div>
           </div>
-          <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h6 className="font-medium text-brand-green mb-1">مؤسسة الرياض</h6>
-                <small className="text-brand-green">منذ 4 ساعات</small>
-              </div>
-              <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">قيد المراجعة</span>
+        ) : <div className="text-gray-500">لا يوجد بيانات تاجر حديثة</div>}
+      </div>
+
+      {/* أحدث الفروع */}
+      <div className="mb-8">
+        <h6 className="text-lg font-semibold text-brand-green mb-4">أحدث الفروع</h6>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {summary?.latest_branches?.map((branch: any) => (
+            <div
+              key={branch.id}
+              className="bg-brand-white rounded-lg shadow-md border border-gold p-4 cursor-pointer hover:bg-gold-light transition"
+              onClick={() => navigate(`/merchant/${branch.vendor_id}`)}
+            >
+              <div className="font-bold text-lg text-gold mb-1">{branch.name}</div>
+              <div className="text-brand-green mb-1">المدينة: {branch.city} - {branch.district}</div>
+              <div className="text-brand-green mb-1">الجوال: {branch.mobile}</div>
+              <div className="text-brand-green mb-1">العنوان: {branch.address}</div>
+              <div className="text-brand-green mb-1">تاريخ الإنشاء: {branch.created_at?.split('T')[0]}</div>
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* بيانات المندوب */}
+      <div className="mb-8">
+        <h6 className="text-lg font-semibold text-brand-green mb-4">بيانات المندوب</h6>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex-1">
+            <div className="font-bold text-lg text-gold mb-1">{summary?.agent?.details?.name}</div>
+            <div className="text-brand-green mb-1">البريد الإلكتروني: {summary?.agent?.details?.email}</div>
+            <div className="text-brand-green mb-1">عدد الفروع: {summary?.agent?.branches_count}</div>
+            <div className="text-brand-green mb-1">عدد الزيارات: {summary?.agent?.visits_count}</div>
           </div>
         </div>
       </div>
-      {/* دعم ومساعدة */}
-      <section id="support" className="mt-12 bg-brand-white rounded-lg shadow-md border border-gold p-6 text-center max-w-xl mx-auto">
-        <h6 className="text-lg font-semibold text-gold mb-2 flex items-center justify-center gap-2">
-        <span>الدعم و المساعده</span>
-        </h6>
-        <div className="flex flex-col items-center gap-2 mb-4">
-          <div className="flex items-center gap-2 text-brand-green text-base">
-            <span className="bg-gold-light text-gold rounded-full p-2 flex items-center justify-center">
-              {/* Headphone icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 18v-6a9 9 0 0118 0v6" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 18a3 3 0 01-6 0v-3a3 3 0 016 0v3zM3 18a3 3 0 006 0v-3a3 3 0 00-6 0v3z" /></svg>
-            </span>
-            <span>اتصل بنا هاتفياً:</span>
-            <a href="tel:966500000000" className="text-gold font-bold underline">+966 50 000 0000</a>
-          </div>
-        </div>
-        <div className="my-2 text-brand-green font-semibold text-base flex items-center justify-center">
-          <span>أو</span>
-        </div>
-        <p className="text-brand-green mb-4 text-sm">يمكنك التواصل مع الدعم عن طريق إرسال رسالة إلى البريد الإلكتروني. ستترد عليك خلال 24 ساعة.</p>
-        <form onSubmit={e => { e.preventDefault(); /* handle send */ }} className="flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="أرسل سؤالك هنا"
-            className="border border-gray-200 rounded px-3 py-2 text-right focus:outline-none focus:border-teal-500 text-sm"
-            dir="rtl"
-            required
-          />
-          <button type="submit" className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded transition-colors">
-            <span>إرسال</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m0 0l4-4m-4 4l4 4" /><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </button>
-        </form>
-      </section>
     </div>
   );
 };

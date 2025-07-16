@@ -61,6 +61,7 @@ const AddNewMerchant: React.FC = () => {
         },
         body: JSON.stringify(payload)
       });
+      //
       if (response.ok || response.status === 201) {
         const result = await response.json();
         setMerchant(result.data);
