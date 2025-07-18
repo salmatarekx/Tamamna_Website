@@ -12,11 +12,12 @@ const AddBranch: React.FC = () => {
     city: '',
     district: '',
     address: '',
-    phone: '',
-    map: '',
+    mobile: '', // رقم الهاتف
     email: '',
     latitude: '',
     longitude: '',
+    location_url: '', // رابط الموقع الجغرافي
+    branch_photos: [] as File[], // صور الفرع
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -24,7 +25,7 @@ const AddBranch: React.FC = () => {
   // Helper to update map link from lat/lng
   const updateMapFromLatLng = (lat: string, lng: string) => {
     if (lat && lng) {
-      setForm(prev => ({ ...prev, map: `https://www.google.com/maps?q=${lat},${lng}` }));
+      setForm(prev => ({ ...prev, location_url: `https://www.google.com/maps?q=${lat},${lng}` }));
     }
   };
 
@@ -32,9 +33,9 @@ const AddBranch: React.FC = () => {
   const updateLatLngFromMap = (map: string) => {
     const match = map.match(/maps\?q=([\d.\-]+),([\d.\-]+)/);
     if (match) {
-      setForm(prev => ({ ...prev, latitude: match[1], longitude: match[2], map }));
+      setForm(prev => ({ ...prev, latitude: match[1], longitude: match[2], location_url: map }));
     } else {
-      setForm(prev => ({ ...prev, map }));
+      setForm(prev => ({ ...prev, location_url: map }));
     }
   };
 
@@ -56,17 +57,13 @@ const AddBranch: React.FC = () => {
   };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === 'latitude' || name === 'longitude') {
-      setForm(prev => {
-        const updated = { ...prev, [name]: value };
-        if (updated.latitude && updated.longitude) {
-          updated.map = `https://www.google.com/maps?q=${updated.latitude},${updated.longitude}`;
-        }
-        return updated;
-      });
-    } else if (name === 'map') {
-      updateLatLngFromMap(value);
+    const { name, value, type, files } = e.target;
+    if (type === 'file' && files) {
+      if (name === 'branch_photos') {
+        setForm(prev => ({ ...prev, [name]: Array.from(files) }));
+      } else {
+        setForm(prev => ({ ...prev, [name]: value }));
+      }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -74,51 +71,45 @@ const AddBranch: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted!"); // Debug log
     setShowSuccess(false);
     setErrors({});
-    // Frontend validation
     const newErrors: { [key: string]: string } = {};
     if (!form.branchName) newErrors.branchName = 'اسم الفرع مطلوب';
     if (!form.city) newErrors.city = 'المدينة مطلوبة';
-    if (!form.phone) newErrors.phone = 'رقم الهاتف مطلوب';
+    if (!form.mobile) newErrors.mobile = 'رقم الهاتف مطلوب';
     if (!vendor.idOrCR && !vendor.id) newErrors.vendor = 'رقم التاجر غير متوفر';
-    // Optional: validate email format
-    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) newErrors.email = 'البريد الإلكتروني غير صالح';
-    // Optional: validate lat/lng as numbers
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'البريد الإلكتروني غير صالح';
     if (form.latitude && isNaN(Number(form.latitude))) newErrors.latitude = 'خط العرض يجب أن يكون رقمًا';
     if (form.longitude && isNaN(Number(form.longitude))) newErrors.longitude = 'خط الطول يجب أن يكون رقمًا';
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    // Prepare API payload
     const token = localStorage.getItem('agent_token');
     if (!vendor.idOrCR && !vendor.id) {
       alert('يجب اختيار تاجر لإضافة فرع');
       return;
     }
-    const payload: Record<string, unknown> = {
-      vendor_id: vendor.idOrCR || vendor.id, // Adjust as needed
-      name: form.branchName,
-      mobile: form.phone,
-      email: form.email || undefined,
-      address: form.address || undefined,
-      location_url: form.map || undefined,
-      city: form.city,
-      district: form.district || undefined,
-      // latitude/longitude are not sent unless backend expects them
-    };
-    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
-    console.log("Sending fetch to:", `${import.meta.env.VITE_API_URL}/api/branches`, payload);
+    // Prepare FormData for file upload
+    const formData = new FormData();
+    formData.append('vendor_id', vendor.idOrCR || vendor.id);
+    formData.append('name', form.branchName);
+    formData.append('mobile', form.mobile);
+    if (form.email) formData.append('email', form.email);
+    if (form.address) formData.append('address', form.address);
+    if (form.location_url) formData.append('location_url', form.location_url);
+    formData.append('city', form.city);
+    if (form.district) formData.append('district', form.district);
+    if (form.branch_photos && form.branch_photos.length > 0) {
+      form.branch_photos.forEach(file => formData.append('branch_photos[]', file));
+    }
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/branches`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(payload)
+        body: formData
       });
       if (res.ok) {
         setShowSuccess(true);
@@ -128,7 +119,6 @@ const AddBranch: React.FC = () => {
         }, 2000);
       } else {
         const data = await res.json();
-        // Handle backend validation errors
         if (data.errors) {
           const apiErrors: { [key: string]: string } = {};
           Object.keys(data.errors).forEach(key => {
@@ -189,8 +179,8 @@ const AddBranch: React.FC = () => {
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">رقم الهاتف</label>
-              <input name="phone" value={form.phone} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رقم الهاتف" />
-              {errors.phone && <div className="text-red-600 text-sm mt-1">{errors.phone}</div>}
+              <input name="mobile" value={form.mobile} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رقم الهاتف" />
+              {errors.mobile && <div className="text-red-600 text-sm mt-1">{errors.mobile}</div>}
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">البريد الإلكتروني</label>
@@ -207,12 +197,20 @@ const AddBranch: React.FC = () => {
               <input name="longitude" value={form.longitude} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="Longitude" />
               {errors.longitude && <div className="text-red-600 text-sm mt-1">{errors.longitude}</div>}
             </div>
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={handleGetLocation} className="bg-gold text-brand-black px-3 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors">تحديد الموقع الحالي</button>
+            {/* Replace the button's container div with a full-width, centered flexbox */}
+            <div className="md:col-span-2 flex justify-center items-center my-2">
+              <button type="button" onClick={handleGetLocation} className="bg-gold text-brand-black px-3 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.93l-.71-.71M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
+                تحديد الموقع الحالي
+              </button>
             </div>
             <div className="md:col-span-2">
-              <label className="block mb-1 font-bold text-gray-700">الموقع الجغرافي (رابط جوجل ماب أو تحديد مباشر)</label>
-              <input name="map" value={form.map} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رابط جوجل ماب أو تحديد مباشر" />
+              <label className="block mb-1 font-bold text-gray-700">رابط الموقع الجغرافي (Google Maps)</label>
+              <input name="location_url" value={form.location_url} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رابط الموقع الجغرافي" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block mb-1 font-bold text-gray-700">صور الفرع (يمكن اختيار أكثر من صورة)</label>
+              <input name="branch_photos" type="file" accept="image/*" multiple onChange={handleFormChange} className={inputClass} style={inputStyle} />
             </div>
           </div>
           {errors.vendor && <div className="text-red-600 text-sm mt-1">{errors.vendor}</div>}

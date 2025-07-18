@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Logo11 from '../assets/Logo11.png';
+import Newest from '../assets/Newest.png';
 import { API_URL } from '../lib/utils';
 
 const GoogleIcon = () => (
@@ -66,10 +66,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="text-center mb-8">
           <div className="mb-6">
             <img
-              src={Logo11}
-              alt="Logo11"
+              src={Newest}
+              alt="Newest"
               className="mx-auto rounded-2xl shadow-lg"
-              style={{ width: '128px', height: '128px', objectFit: 'contain' }}
+              style={{ width: '180px', height: '180px', objectFit: 'contain' }}
             />
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-black mb-2">مرحباً بك في جولد ستيشن</h2>
@@ -98,27 +98,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               onChange={e => setPassword(e.target.value)}
             />
           </div>
-          <div className="text-center">
-            <a href="#" className="text-sm font-bold text-gold hover:text-gold-dark">نسيت كلمة المرور؟</a>
-          </div>
           <button 
             type="submit" 
             className="w-full bg-gold text-brand-black py-2 px-4 rounded-full hover:bg-gold-dark hover:text-brand-white transition-colors duration-200 text-base md:text-lg"
           >
             تسجيل الدخول
           </button>
-          <div className="text-center text-brand-green text-sm">أو</div>
-          <div className="space-y-3">
-            <button type="button" className="w-full border border-red-500 text-red-500 py-2 px-4 rounded-full hover:bg-red-500 hover:text-brand-white transition-colors duration-200 text-base md:text-lg">
-              <GoogleIcon />الدخول بـ Google
-            </button>
-            <button type="button" className="w-full border border-brand-black text-brand-black py-2 px-4 rounded-full hover:bg-brand-black hover:text-brand-white transition-colors duration-200 text-base md:text-lg">
-              <AppleIcon />الدخول بـ Apple
-            </button>
-            <button type="button" className="w-full border border-brand-green text-brand-green py-2 px-4 rounded-full hover:bg-brand-green hover:text-brand-white transition-colors duration-200 text-base md:text-lg">
-              <FacebookIcon />الدخول بـ Facebook
-            </button>
-          </div>
         </form>
       </div>
     </div>

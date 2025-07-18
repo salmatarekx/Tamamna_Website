@@ -7,6 +7,8 @@ const AddNewMerchant: React.FC = () => {
     commercial_name: '',
     commercial_registration_number: '',
     mobile: '',
+    id_number: '', // رقم الهويه
+    license_number: '', // رقم الرخصه
     whatsapp: '',
     snapchat: '',
     instagram: '',
@@ -25,6 +27,8 @@ const AddNewMerchant: React.FC = () => {
     shop_front_image: null as File | null,
     commercial_registration_image: null as File | null,
     id_image: null as File | null,
+    license_photos: null as File | null, // صورة الرخصة
+    other_attachments: [] as File[], // مرفقات أخرى
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [merchant, setMerchant] = useState<Record<string, unknown> | null>(null);
@@ -33,7 +37,11 @@ const AddNewMerchant: React.FC = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, files } = e.target as HTMLInputElement;
     if (type === 'file' && files) {
-      setForm(prev => ({ ...prev, [name]: files[0] }));
+      if (name === 'other_attachments') {
+        setForm(prev => ({ ...prev, [name]: Array.from(files) }));
+      } else {
+        setForm(prev => ({ ...prev, [name]: files[0] }));
+      }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -42,26 +50,45 @@ const AddNewMerchant: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    // إعداد البيانات بدون الصور
-    const payload: Record<string, unknown> = { ...form };
-    delete payload.shop_front_image;
-    delete payload.commercial_registration_image;
-    delete payload.id_image;
-    // تحويل القيم النصية إلى Boolean
-    payload.has_online_platform = form.has_online_platform === "true";
-    payload.has_product_photos = form.has_product_photos === "true";
-    // إرسال جميع الحقول حتى لو كانت null
-    // لا تحذف الحقول الفارغة
+    const token = localStorage.getItem('agent_token');
+    // Prepare FormData for file upload
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => {
+      if (
+        key === 'other_attachments' && Array.isArray(value)
+      ) {
+        value.forEach((file: any) => {
+          if (file instanceof File) {
+            formData.append('other_attachments[]', file);
+          }
+        });
+      } else if (
+        [
+          'shop_front_image',
+          'commercial_registration_image',
+          'id_image',
+          'license_photos'
+        ].includes(key) && value instanceof File
+      ) {
+        formData.append(key, value as File);
+      } else if (['has_online_platform', 'has_product_photos'].includes(key)) {
+        if (value === 'true') {
+          formData.append(key, '1');
+        } else if (value === 'false') {
+          formData.append(key, '0');
+        }
+      } else if (value !== undefined && value !== null && value !== '') {
+        formData.append(key, value as any);
+      }
+    });
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/vendors`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(payload)
+        body: formData
       });
-      //
       if (response.ok || response.status === 201) {
         const result = await response.json();
         setMerchant(result.data);
@@ -80,7 +107,7 @@ const AddNewMerchant: React.FC = () => {
   const inputStyle = { backgroundColor: '#d6f1e9' };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto" dir="rtl">
+    <div className="p-4 max-w-4xl mx-auto mt-16" dir="rtl">
       {showSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 text-center font-bold text-lg shadow">
           تم الحفظ بنجاح
@@ -111,6 +138,14 @@ const AddNewMerchant: React.FC = () => {
             <div>
               <label className="block mb-1 font-bold text-gray-700">رقم الجوال</label>
               <input name="mobile" value={form.mobile} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رقم الجوال" />
+            </div>
+            <div>
+              <label className="block mb-1 font-bold text-gray-700">رقم الهويه</label>
+              <input name="id_number" value={form.id_number} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رقم الهويه" />
+            </div>
+            <div>
+              <label className="block mb-1 font-bold text-gray-700">رقم الرخصه</label>
+              <input name="license_number" value={form.license_number} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رقم الرخصه" />
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">واتساب</label>
@@ -202,24 +237,24 @@ const AddNewMerchant: React.FC = () => {
               <label className="block mb-1 font-bold text-gray-700">صورة الهوية</label>
               <input name="id_image" type="file" accept="image/*" onChange={handleFormChange} className={inputClass} style={inputStyle} />
             </div>
+            <div className="md:col-span-2">
+              <label className="block mb-1 font-bold text-gray-700">صورة الرخصة</label>
+              <input name="license_photos" type="file" accept="image/*" onChange={handleFormChange} className={inputClass} style={inputStyle} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block mb-1 font-bold text-gray-700">مرفقات أخرى (اختياري، يمكن اختيار أكثر من ملف)</label>
+              <input name="other_attachments" type="file" accept="image/*,application/pdf" multiple onChange={handleFormChange} className={inputClass} style={inputStyle} />
+            </div>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-col gap-3 mt-4">
             <button
-              className="bg-teal-600 text-white px-4 py-2 rounded-full font-bold hover:bg-teal-700 transition-colors duration-200"
+              className="w-full bg-gold text-brand-black py-3 rounded-lg font-bold hover:bg-gold-dark transition-colors duration-200"
               type="submit"
             >
-              حفظ
+              حفظ وانتقال لاضافه فرع
             </button>
             <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-full font-bold hover:bg-blue-600 transition-colors duration-200"
-              type="button"
-              onClick={() => merchant && navigate('/add-branch', { state: { vendor: merchant } })}
-              disabled={!merchant}
-            >
-              إضافة فرع جديد
-            </button>
-            <button
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-full font-bold hover:bg-gray-300 transition-colors duration-200"
+              className="w-full bg-white border border-gold text-brand-green py-3 rounded-lg font-bold hover:bg-gold-light transition-colors duration-200"
               type="button"
               onClick={() => navigate('/merchants')}
             >

@@ -41,6 +41,12 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
           if (typeof value === 'object' && value instanceof File) {
             formData.append(key, value);
           }
+        } else if (key === 'delivery_service_requested') {
+          if (value === 'true') {
+            formData.append(key, '1');
+          } else if (value === 'false') {
+            formData.append(key, '0');
+          }
         } else {
           formData.append(key, value as string);
         }

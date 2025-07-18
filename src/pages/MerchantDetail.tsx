@@ -73,6 +73,10 @@ const MerchantDetail: React.FC<MerchantDetailProps> = ({ onNavigate }) => {
             <input type="text" className="w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green font-bold" value={merchant.commercial_registration_number || 'غير متوفر'} readOnly />
           </div>
           <div>
+            <label className="block text-sm font-medium text-brand-green mb-2">رقم الهويه</label>
+            <input type="text" className="w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green font-bold" value={merchant.id_number || 'غير متوفر'} readOnly />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-brand-green mb-2">رقم الجوال</label>
             <input type="text" className="w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green font-bold" value={merchant.mobile || 'غير متوفر'} readOnly />
           </div>

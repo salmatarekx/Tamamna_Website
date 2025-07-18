@@ -25,6 +25,9 @@ const VisitReport: React.FC = () => {
     gps_longitude: '',
     package_id: '',
     visit_end_at: '',
+    met_person_name: '', // اسم المسؤل الدي قابلته
+    met_person_role: '', // دور المسؤول
+    delivery_service_requested: '', // طلب خدمه تصوير (as string for select)
   });
   const [packages, setPackages] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
@@ -152,6 +155,7 @@ const VisitReport: React.FC = () => {
   // عند الضغط على التالي انتقل لاختيار الباقة
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = { ...form, delivery_service_requested: form.delivery_service_requested === 'true' ? true : form.delivery_service_requested === 'false' ? false : undefined };
     setStep('package');
   };
 
@@ -173,6 +177,27 @@ const VisitReport: React.FC = () => {
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">تاريخ الزيارة</label>
             <input type="date" name="visit_date" value={form.visit_date} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg" required />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">اسم المسؤل الدي قابلته</label>
+            <input type="text" name="met_person_name" value={form.met_person_name} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">دور المسؤول</label>
+            <select name="met_person_role" value={form.met_person_role} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg">
+              <option value="">اختر</option>
+              <option value="owner">مالك</option>
+              <option value="manager">مدير</option>
+              <option value="other">اخرى</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">طلب خدمه تصوير</label>
+            <select name="delivery_service_requested" value={form.delivery_service_requested} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg">
+              <option value="">اختر</option>
+              <option value="true">نعم</option>
+              <option value="false">لا</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">ملاحظات عامة</label>

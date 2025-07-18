@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Screenshot from '../assets/Screenshot 2025-06-25 022750.png';
 import Sidebar from './Sidebar';
-import GoldLogo from '../assets/Goldlogo2.jpeg';
+import Newest from '../assets/Newest.png';
 
 const TopBar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,7 +21,7 @@ const TopBar: React.FC = () => {
             <rect y="17" width="24" height="2" rx="1" fill="currentColor" />
           </svg>
         </button>
-        <img src={GoldLogo} alt="Gold Station Logo" className="h-24 w-auto" />
+        <img src={Newest} alt="Logo" className="h-20 w-auto rounded-xl shadow-md" />
       </header>
       {sidebarOpen && <Sidebar onClose={() => setSidebarOpen(false)} />}
     </>
