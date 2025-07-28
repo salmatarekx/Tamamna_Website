@@ -43,14 +43,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       </div>
 
       {/* كل الإحصائيات في صف واحد */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8">
         <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
           <span className="text-gold text-2xl mb-1">👥</span>
           <span className="text-xl font-bold text-brand-green">{summary?.vendor_count ?? '-'}</span>
           <span className="text-xs text-brand-green mt-1">عدد التجار</span>
         </div>
         <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
-          <span className="text-gold text-2xl mb-1">��</span>
+          <span className="text-gold text-2xl mb-1">🏢</span>
           <span className="text-xl font-bold text-brand-green">{summary?.branch_count ?? '-'}</span>
           <span className="text-xs text-brand-green mt-1">عدد الفروع</span>
         </div>
@@ -63,6 +63,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <span className="text-gold text-2xl mb-1">✅</span>
           <span className="text-xl font-bold text-brand-green">{summary?.visits_today ?? '-'}</span>
           <span className="text-xs text-brand-green mt-1">زيارات اليوم</span>
+        </div>
+        <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
+          <span className="text-gold text-2xl mb-1">📅</span>
+          <span className="text-xl font-bold text-brand-green">{summary?.agent?.visits_month ?? summary?.agent?.monthly_visits?.count ?? '-'}</span>
+          <span className="text-xs text-brand-green mt-1">زيارات الشهر</span>
         </div>
         <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
           <span className="text-gold text-2xl mb-1">🏬</span>

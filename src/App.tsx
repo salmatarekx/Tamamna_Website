@@ -16,6 +16,7 @@ import SubscriptionConfirmation from './pages/SubscriptionConfirmation';
 import MerchantDetail from './pages/MerchantDetail';
 import UserProfileInfo from './pages/UserProfileInfo';
 import AddBranch from './pages/AddBranch';
+import AgentVisits from './pages/AgentVisits';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const AppContent = () => {
             <Route path="/subscription-confirmation" element={<SubscriptionConfirmation />} />
             <Route path="/profile" element={<UserProfileInfo />} />
             <Route path="/add-branch" element={<AddBranch />} />
+            <Route path="/agent-visits" element={<AgentVisits />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
    

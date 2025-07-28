@@ -34,6 +34,10 @@ const VisitReport: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'form' | 'package'>('form');
+  
+  // Custom option states
+  const [showCustomMetPersonRole, setShowCustomMetPersonRole] = useState(false);
+  const [locationCaptured, setLocationCaptured] = useState(false);
 
   // Audio recording
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -62,6 +66,20 @@ const VisitReport: React.FC = () => {
     const { name, value, type, files } = e.target as HTMLInputElement;
     if (type === 'file' && files) {
       setForm(prev => ({ ...prev, [name]: files[0] }));
+    } else if (name === 'met_person_role') {
+      // Check if this is coming from the select dropdown
+      if (e.target.tagName === 'SELECT') {
+        if (value === 'custom') {
+          setShowCustomMetPersonRole(true);
+          setForm(prev => ({ ...prev, [name]: '' }));
+        } else {
+          setShowCustomMetPersonRole(false);
+          setForm(prev => ({ ...prev, [name]: value }));
+        }
+      } else {
+        // This is coming from the custom input field
+        setForm(prev => ({ ...prev, [name]: value }));
+      }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -73,6 +91,7 @@ const VisitReport: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         pos => {
           setForm(prev => ({ ...prev, gps_latitude: String(pos.coords.latitude), gps_longitude: String(pos.coords.longitude) }));
+          setLocationCaptured(true);
         },
         err => alert('تعذر الحصول على الموقع الجغرافي')
       );
@@ -188,8 +207,20 @@ const VisitReport: React.FC = () => {
               <option value="">اختر</option>
               <option value="owner">مالك</option>
               <option value="manager">مدير</option>
-              <option value="other">اخرى</option>
+              <option value="custom">اختيار آخر</option>
             </select>
+            {showCustomMetPersonRole && (
+              <div className="mt-2">
+                <input 
+                  type="text" 
+                  name="met_person_role" 
+                  value={form.met_person_role} 
+                  onChange={handleChange} 
+                  className="w-full px-3 py-2 border rounded-lg" 
+                  placeholder="اكتب دور المسؤول المخصص..."
+                />
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">طلب خدمه تصوير</label>
@@ -271,16 +302,13 @@ const VisitReport: React.FC = () => {
             <label className="block text-sm font-bold text-gray-700 mb-2">توقيع العميل (jpg, jpeg, png, max 5MB)</label>
             <input type="file" name="signature_image" accept="image/jpg,image/jpeg,image/png" onChange={handleChange} className="w-full" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-bold text-gray-700 mb-2">خط العرض (Latitude)</label>
-              <input type="number" name="gps_latitude" value={form.gps_latitude} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg" />
+              <button type="button" onClick={handleGetLocation} className="w-full bg-gold text-brand-black px-3 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors">تحديد الموقع الحالي</button>
+              {locationCaptured && (
+                <div className="mt-2 text-sm text-green-600">✓ تم تحديد الموقع</div>
+              )}
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-bold text-gray-700 mb-2">خط الطول (Longitude)</label>
-              <input type="number" name="gps_longitude" value={form.gps_longitude} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg" />
-            </div>
-            <button type="button" onClick={handleGetLocation} className="bg-gold text-brand-black px-3 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors mt-6">تحديد الموقع الحالي</button>
           </div>
           <button type="submit" className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors duration-200" disabled={loading}>{loading ? 'جاري الحفظ...' : 'التالي'}</button>
         </form>

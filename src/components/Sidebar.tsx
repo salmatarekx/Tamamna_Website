@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaHome, FaMapMarkedAlt, FaUsers, FaSignOutAlt, FaRegQuestionCircle } from 'react-icons/fa';
+import { FaUser, FaHome, FaMapMarkedAlt, FaUsers, FaSignOutAlt, FaRegQuestionCircle, FaClipboardList } from 'react-icons/fa';
 
 const navItems = [
   { label: 'الرئيسية', icon: <FaHome />, path: '/dashboard' },
   { label: 'الملف الشخصي', icon: <FaUser />, path: '/profile' },
+  { label: 'زيارات المندوب', icon: <FaClipboardList />, path: '/agent-visits' },
   { label: 'التجار', icon: <FaUsers />, path: '/merchants' },
 ];
 

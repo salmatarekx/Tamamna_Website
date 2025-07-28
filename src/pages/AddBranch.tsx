@@ -21,6 +21,18 @@ const AddBranch: React.FC = () => {
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+966'); // Default to Saudi Arabia
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+
+  // GCC Countries with calling codes
+  const gccCountries = [
+    { name: 'السعودية', code: '+966', flag: '🇸🇦' },
+    { name: 'الإمارات', code: '+971', flag: '🇦🇪' },
+    { name: 'الكويت', code: '+965', flag: '🇰🇼' },
+    { name: 'قطر', code: '+974', flag: '🇶🇦' },
+    { name: 'البحرين', code: '+973', flag: '🇧🇭' },
+    { name: 'عمان', code: '+968', flag: '🇴🇲' },
+  ];
 
   // Helper to update map link from lat/lng
   const updateMapFromLatLng = (lat: string, lng: string) => {
@@ -64,6 +76,12 @@ const AddBranch: React.FC = () => {
       } else {
         setForm(prev => ({ ...prev, [name]: value }));
       }
+    } else if (name === 'mobile') {
+      // Only allow digits and limit to 9 characters
+      const digitsOnly = value.replace(/\D/g, '');
+      if (digitsOnly.length <= 9) {
+        setForm(prev => ({ ...prev, [name]: digitsOnly }));
+      }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -94,7 +112,7 @@ const AddBranch: React.FC = () => {
     const formData = new FormData();
     formData.append('vendor_id', vendor.idOrCR || vendor.id);
     formData.append('name', form.branchName);
-    formData.append('mobile', form.mobile);
+    formData.append('mobile', selectedCountryCode + form.mobile);
     if (form.email) formData.append('email', form.email);
     if (form.address) formData.append('address', form.address);
     if (form.location_url) formData.append('location_url', form.location_url);
@@ -135,6 +153,21 @@ const AddBranch: React.FC = () => {
   };
 
   const inputClass = "w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal";
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.country-dropdown')) {
+        setShowCountryDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const inputStyle = { backgroundColor: '#d6f1e9' };
 
   return (
@@ -179,8 +212,63 @@ const AddBranch: React.FC = () => {
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">رقم الهاتف</label>
-              <input name="mobile" value={form.mobile} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رقم الهاتف" />
-              {errors.mobile && <div className="text-red-600 text-sm mt-1">{errors.mobile}</div>}
+              <div className="relative">
+                <div className="flex">
+                  {/* Country Code Selector */}
+                  <div className="relative country-dropdown">
+                    <button
+                      type="button"
+                      onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                      className="flex items-center gap-2 px-3 py-2 border border-gold rounded-r-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal min-w-[120px]"
+                      style={{ backgroundColor: '#d6f1e9' }}
+                    >
+                      <span className="text-lg">{gccCountries.find(c => c.code === selectedCountryCode)?.flag}</span>
+                      <span className="text-sm font-medium">{selectedCountryCode}</span>
+                      <span className="text-xs">▼</span>
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {showCountryDropdown && (
+                      <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                        {gccCountries.map((country) => (
+                          <button
+                            key={country.code}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountryCode(country.code);
+                              setShowCountryDropdown(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2 text-right hover:bg-gray-50 transition-colors"
+                          >
+                            <span className="text-lg">{country.flag}</span>
+                            <span className="text-sm font-medium text-gray-700">{country.name}</span>
+                            <span className="text-xs text-gray-500 mr-auto">{country.code}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Phone Number Input */}
+                  <input 
+                    name="mobile" 
+                    value={form.mobile} 
+                    onChange={handleFormChange} 
+                    className="flex-1 px-3 py-2 border border-gold border-r-0 rounded-l-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal" 
+                    style={{ backgroundColor: '#d6f1e9' }}
+                    placeholder="9 أرقام فقط" 
+                    maxLength={9}
+                  />
+                  {form.mobile && (
+                    <div className="absolute -bottom-6 right-0 text-xs text-gray-500">
+                      {form.mobile.length}/9
+                    </div>
+                  )}
+                </div>
+                {errors.mobile && (
+                  <div className="mt-1 text-sm text-red-600">{errors.mobile}</div>
+                )}
+              </div>
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">البريد الإلكتروني</label>

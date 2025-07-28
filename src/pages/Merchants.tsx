@@ -27,6 +27,8 @@ const renderStars = (ratingValue: number) => {
 const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
   const [search, setSearch] = useState('');
   const [searchCategory, setSearchCategory] = useState<string>('');
+  const [customSearchCategory, setCustomSearchCategory] = useState<string>('');
+  const [showCustomSearch, setShowCustomSearch] = useState(false);
   const [vendors, setVendors] = useState([]);
   const navigate = useNavigate();
 
@@ -64,8 +66,11 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
         });
       return;
     }
+    
     const token = localStorage.getItem('agent_token');
-    fetch(`${API_URL}/api/vendors?search=${encodeURIComponent(search)}&search_by=${encodeURIComponent(searchCategory)}`, {
+    const searchBy = searchCategory === 'custom' ? customSearchCategory : searchCategory;
+    
+    fetch(`${API_URL}/api/vendors?search=${encodeURIComponent(search)}&search_by=${encodeURIComponent(searchBy)}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -82,7 +87,8 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
   // Filter merchants based on search and category
   const filteredMerchants = vendors.filter(merchant => {
     if (!search) return true;
-    const value = merchant[searchCategory] || '';
+    const searchBy = searchCategory === 'custom' ? customSearchCategory : searchCategory;
+    const value = merchant[searchBy] || '';
     return value.includes(search);
   });
 
@@ -109,6 +115,22 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
             🔍
           </button>
           </div>
+          
+          {/* Custom Search Category Input - Shows when "آخر" is selected */}
+          {showCustomSearch && (
+            <div className="relative">
+              <input 
+                type="text" 
+                value={customSearchCategory}
+                onChange={e => setCustomSearchCategory(e.target.value)}
+                className="w-full min-w-[180px] px-8 py-3 pr-12 border border-gold rounded-full focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
+                placeholder="اكتب نوع البحث المطلوب..."
+                aria-label="نوع البحث المخصص"
+              />
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gold-dark">📝</span>
+            </div>
+          )}
+          
           <div className="w-full">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -121,7 +143,8 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
                   {searchCategory === '' ? 'اختر طريقة البحث' :
                     searchCategory === 'name' ? 'اسم التاجر' :
                     searchCategory === 'phone' ? 'رقم الجوال' :
-                    searchCategory === 'idOrCR' ? 'رقم السجل التجاري' : ''}
+                    searchCategory === 'idOrCR' ? 'رقم السجل التجاري' :
+                    searchCategory === 'custom' ? `آخر: ${customSearchCategory || 'اكتب نوع البحث'}` : ''}
                   <svg className="ml-2 w-4 h-4 text-gold-dark" fill="none" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </button>
               </DropdownMenuTrigger>
@@ -134,6 +157,10 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
                 <DropdownMenuItem onSelect={() => setSearchCategory('name')}>اسم التاجر</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setSearchCategory('phone')}>رقم الجوال</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setSearchCategory('idOrCR')}>رقم السجل التجاري</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => {
+                  setSearchCategory('custom');
+                  setShowCustomSearch(true);
+                }}>آخر</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

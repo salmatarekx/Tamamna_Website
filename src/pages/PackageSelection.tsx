@@ -52,6 +52,14 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
         }
       }
     });
+
+    // Add custom_role if met_person_role is not one of the predefined options
+    const predefinedRoles = ['owner', 'manager', 'custom'];
+    if (form.met_person_role && !predefinedRoles.includes(form.met_person_role)) {
+      formData.append('custom_role', form.met_person_role);
+      // Remove the met_person_role from formData since we're sending custom_role instead
+      formData.delete('met_person_role');
+    }
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/vendor-visits`, {
         method: 'POST',
