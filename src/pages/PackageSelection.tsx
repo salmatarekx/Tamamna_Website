@@ -31,6 +31,8 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
     setError('');
     const token = localStorage.getItem('agent_token');
     const formData = new FormData();
+    
+    // Process form data with proper type checking
     Object.entries({ ...form, package_id: selected }).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '') {
         if (
@@ -38,34 +40,42 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
           key === 'video_recording' ||
           key === 'signature_image'
         ) {
-          if (typeof value === 'object' && value instanceof File) {
-            formData.append(key, value);
+          // Proper type checking for File objects
+          if (value && typeof value === 'object' && value !== null && 'size' in value && 'type' in value) {
+            formData.append(key, value as File);
           }
         } else if (key === 'delivery_service_requested') {
-          if (value === 'true') {
+          // Handle boolean conversion properly
+          const boolValue = String(value).toLowerCase();
+          if (boolValue === 'true') {
             formData.append(key, '1');
-          } else if (value === 'false') {
+          } else {
             formData.append(key, '0');
           }
         } else {
-          formData.append(key, value as string);
+          // Convert all other values to string
+          formData.append(key, String(value));
         }
       }
     });
 
-    // Add custom_role if met_person_role is not one of the predefined options
+    // Handle custom role logic with proper type checking
     const predefinedRoles = ['owner', 'manager', 'custom'];
-    if (form.met_person_role && !predefinedRoles.includes(form.met_person_role)) {
-      formData.append('custom_role', form.met_person_role);
+    const metPersonRole = form.met_person_role;
+    
+    if (metPersonRole && typeof metPersonRole === 'string' && !predefinedRoles.includes(metPersonRole)) {
+      formData.append('custom_role', metPersonRole);
       // Remove the met_person_role from formData since we're sending custom_role instead
       formData.delete('met_person_role');
     }
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/vendor-visits`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
+      
       if (res.ok || res.status === 201) {
         setShowSnackbar(true);
         setTimeout(() => {
@@ -74,7 +84,13 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
         }, 2000);
       } else {
         const data = await res.json();
-        setError(data.message || 'فشل في حفظ تفاصيل الزيارة');
+        // Handle validation errors properly
+        if (data.errors) {
+          const errorMessages = Object.values(data.errors).flat().join(', ');
+          setError(errorMessages);
+        } else {
+          setError(data.message || 'فشل في حفظ تفاصيل الزيارة');
+        }
       }
     } catch (err) {
       setError('حدث خطأ أثناء الاتصال بالخادم');
