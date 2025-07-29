@@ -243,35 +243,47 @@ const AddNewMerchant: React.FC = () => {
         setForm(prev => ({ ...prev, [name]: digitsOnly }));
       }
     } else if (name === 'activity_type') {
-      if (value === 'custom') {
+      if (e.target.tagName === 'SELECT' && value === 'custom') {
         setShowCustomActivityType(true);
         setForm(prev => ({ ...prev, [name]: '' }));
-      } else {
+      } else if (e.target.tagName === 'SELECT' && value !== 'custom') {
         setShowCustomActivityType(false);
+        setForm(prev => ({ ...prev, [name]: value }));
+      } else {
+        // This is from the custom input field
         setForm(prev => ({ ...prev, [name]: value }));
       }
     } else if (name === 'has_commercial_registration') {
-      if (value === 'custom') {
+      if (e.target.tagName === 'SELECT' && value === 'custom') {
         setShowCustomCommercialRegistration(true);
         setForm(prev => ({ ...prev, [name]: '' }));
-      } else {
+      } else if (e.target.tagName === 'SELECT' && value !== 'custom') {
         setShowCustomCommercialRegistration(false);
+        setForm(prev => ({ ...prev, [name]: value }));
+      } else {
+        // This is from the custom input field
         setForm(prev => ({ ...prev, [name]: value }));
       }
     } else if (name === 'has_online_platform') {
-      if (value === 'custom') {
+      if (e.target.tagName === 'SELECT' && value === 'custom') {
         setShowCustomOnlinePlatform(true);
         setForm(prev => ({ ...prev, [name]: '' }));
-      } else {
+      } else if (e.target.tagName === 'SELECT' && value !== 'custom') {
         setShowCustomOnlinePlatform(false);
+        setForm(prev => ({ ...prev, [name]: value }));
+      } else {
+        // This is from the custom input field
         setForm(prev => ({ ...prev, [name]: value }));
       }
     } else if (name === 'has_product_photos') {
-      if (value === 'custom') {
+      if (e.target.tagName === 'SELECT' && value === 'custom') {
         setShowCustomProductPhotos(true);
         setForm(prev => ({ ...prev, [name]: '' }));
-      } else {
+      } else if (e.target.tagName === 'SELECT' && value !== 'custom') {
         setShowCustomProductPhotos(false);
+        setForm(prev => ({ ...prev, [name]: value }));
+      } else {
+        // This is from the custom input field
         setForm(prev => ({ ...prev, [name]: value }));
       }
     } else {
@@ -701,11 +713,12 @@ const AddNewMerchant: React.FC = () => {
               <label className="block mb-1 font-bold text-gray-700">اسم الشارع</label>
               <input name="street_name" value={form.street_name} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="اسم الشارع" />
             </div>
+            {/* Activity Type Field */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">نوع النشاط *</label>
               <select 
                 name="activity_type" 
-                value={form.activity_type} 
+                value={showCustomActivityType ? 'custom' : form.activity_type} 
                 onChange={handleFormChange} 
                 className={`${inputClass} ${errors.activity_type ? 'border-red-500' : ''}`} 
                 style={inputStyle}
@@ -734,11 +747,12 @@ const AddNewMerchant: React.FC = () => {
               <label className="block mb-1 font-bold text-gray-700">تاريخ بداية النشاط</label>
               <input name="activity_start_date" value={form.activity_start_date} onChange={handleFormChange} type="date" className={inputClass} style={inputStyle} />
             </div>
+            {/* Commercial Registration Field */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">هل يوجد سجل تجاري؟ *</label>
               <select 
                 name="has_commercial_registration" 
-                value={form.has_commercial_registration} 
+                value={showCustomCommercialRegistration ? 'custom' : form.has_commercial_registration} 
                 onChange={handleFormChange} 
                 className={`${inputClass} ${errors.has_commercial_registration ? 'border-red-500' : ''}`} 
                 style={inputStyle}
@@ -763,9 +777,16 @@ const AddNewMerchant: React.FC = () => {
                 <div className="mt-1 text-sm text-red-600">{errors.has_commercial_registration}</div>
               )}
             </div>
+            {/* Online Platform Field */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">هل يوجد منصة إلكترونية؟</label>
-              <select name="has_online_platform" value={form.has_online_platform} onChange={handleFormChange} className={inputClass} style={inputStyle}>
+              <select 
+                name="has_online_platform" 
+                value={showCustomOnlinePlatform ? 'custom' : form.has_online_platform} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle}
+              >
                 <option value="">اختر</option>
                 <option value="true">نعم</option>
                 <option value="false">لا</option>
@@ -790,9 +811,16 @@ const AddNewMerchant: React.FC = () => {
               <label className="block mb-1 font-bold text-gray-700">مشاكل سابقة مع المنصات</label>
               <input name="previous_platform_issues" value={form.previous_platform_issues} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="مشاكل سابقة مع المنصات" />
             </div>
+            {/* Product Photos Field */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">هل يوجد صور للمنتجات؟</label>
-              <select name="has_product_photos" value={form.has_product_photos} onChange={handleFormChange} className={inputClass} style={inputStyle}>
+              <select 
+                name="has_product_photos" 
+                value={showCustomProductPhotos ? 'custom' : form.has_product_photos} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle}
+              >
                 <option value="">اختر</option>
                 <option value="true">نعم</option>
                 <option value="false">لا</option>

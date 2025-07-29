@@ -37,20 +37,70 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/dashboard" element={<Dashboard onNavigate={() => {}} />} />
-            <Route path="/merchants" element={<Merchants onNavigate={() => {}} />} />
-            <Route path="/merchant/:id" element={<MerchantDetail onNavigate={() => {}} />} />
-            <Route path="/add-merchant" element={<AddNewMerchant />} />
-            <Route path="/visitreport" element={<VisitReport />} />
-            <Route path="/packages" element={<Packages />} />
-            <Route path="/verification-code" element={<VerificationCode />} />
-            <Route path="/subscription-confirmation" element={<SubscriptionConfirmation />} />
-            <Route path="/profile" element={<UserProfileInfo />} />
-            <Route path="/add-branch" element={<AddBranch />} />
-            <Route path="/agent-visits" element={<AgentVisits />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-   
+          
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard onNavigate={() => {}} />
+            </ProtectedRoute>
+          } />
+          <Route path="/merchants" element={
+            <ProtectedRoute>
+              <Merchants onNavigate={() => {}} />
+            </ProtectedRoute>
+          } />
+          <Route path="/merchant/:id" element={
+            <ProtectedRoute>
+              <MerchantDetail onNavigate={() => {}} />
+            </ProtectedRoute>
+          } />
+          <Route path="/add-merchant" element={
+            <ProtectedRoute>
+              <AddNewMerchant />
+            </ProtectedRoute>
+          } />
+          <Route path="/visitreport" element={
+            <ProtectedRoute>
+              <VisitReport />
+            </ProtectedRoute>
+          } />
+          <Route path="/packages" element={
+            <ProtectedRoute>
+              <Packages />
+            </ProtectedRoute>
+          } />
+          <Route path="/verification-code" element={
+            <ProtectedRoute>
+              <VerificationCode />
+            </ProtectedRoute>
+          } />
+          <Route path="/subscription-confirmation" element={
+            <ProtectedRoute>
+              <SubscriptionConfirmation />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <UserProfileInfo />
+            </ProtectedRoute>
+          } />
+          <Route path="/add-branch" element={
+            <ProtectedRoute>
+              <AddBranch />
+            </ProtectedRoute>
+          } />
+          <Route path="/agent-visits" element={
+            <ProtectedRoute>
+              <AgentVisits />
+            </ProtectedRoute>
+          } />
+          
+          {/* Not Found Route */}
+          <Route path="*" element={
+            <ProtectedRoute>
+              <NotFound />
+            </ProtectedRoute>
+          } />
         </Routes>
       </div>
     </>

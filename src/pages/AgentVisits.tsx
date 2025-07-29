@@ -1,4 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Agent {
   id: number;
@@ -114,6 +120,7 @@ const AgentVisits: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [visitSearch, setVisitSearch] = useState('');
+  const [expandedVisits, setExpandedVisits] = useState<string[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem('agent_token');
@@ -223,138 +230,142 @@ const AgentVisits: React.FC = () => {
           </div>
         </div>
 
-        {/* Visits List */}
+        {/* Visits List with Accordion */}
         <div className="space-y-4">
           {filteredVisits.length > 0 ? filteredVisits.map((visit) => (
-            <div key={visit.id} className="bg-brand-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              {/* Visit Header */}
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gold-light rounded-full flex items-center justify-center">
-                    <span className="text-xl">📅</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-brand-green">زيارة بتاريخ {formatDate(visit.visit_date)}</h3>
-                    <p className="text-sm text-gray-500">رقم الزيارة: {visit.id}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClasses(visit.visit_status)}`}>
-                    {getStatusArabic(visit.visit_status)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Visit Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">📝</span>
-                    <div>
-                      <div className="font-medium text-brand-green">ملاحظات الزيارة</div>
-                      <div className="text-sm text-gray-600">{visit.notes || 'لا توجد ملاحظات'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">⭐</span>
-                    <div>
-                      <div className="font-medium text-brand-green">تقييم التاجر</div>
-                      <div className="text-sm text-gray-600">{visit.vendor_rating || 'غير محدد'}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">💬</span>
-                    <div>
-                      <div className="font-medium text-brand-green">ملاحظات المندوب</div>
-                      <div className="text-sm text-gray-600">{visit.agent_notes || 'لا توجد ملاحظات'}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">🔒</span>
-                    <div>
-                      <div className="font-medium text-brand-green">ملاحظات داخلية</div>
-                      <div className="text-sm text-gray-600">{visit.internal_notes || 'لا توجد ملاحظات'}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">📍</span>
-                    <div>
-                      <div className="font-medium text-brand-green">إحداثيات GPS</div>
-                      <div className="text-sm text-gray-600">
-                        {visit.gps_latitude && visit.gps_longitude ? 
-                          `${visit.gps_latitude}, ${visit.gps_longitude}` : 
-                          'غير محدد'
-                        }
+            <div key={visit.id} className="bg-brand-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <Accordion type="single" collapsible>
+                <AccordionItem value={`visit-${visit.id}`} className="border-none">
+                  <AccordionTrigger className="px-6 py-4 w-full">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gold-light rounded-full flex items-center justify-center">
+                          <span className="text-xl">📅</span>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-brand-green text-right">زيارة بتاريخ {formatDate(visit.visit_date)}</h3>
+                          <p className="text-sm text-gray-500 text-right">رقم الزيارة: {visit.id}</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClasses(visit.visit_status)}`}>
+                        {getStatusArabic(visit.visit_status)}
                       </div>
                     </div>
-                  </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-6">
+                    {/* Visit Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">📝</span>
+                          <div>
+                            <div className="font-medium text-brand-green">ملاحظات الزيارة</div>
+                            <div className="text-sm text-gray-600">{visit.notes || 'لا توجد ملاحظات'}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">⭐</span>
+                          <div>
+                            <div className="font-medium text-brand-green">تقييم التاجر</div>
+                            <div className="text-sm text-gray-600">{visit.vendor_rating || 'غير محدد'}</div>
+                          </div>
+                        </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">✍️</span>
-                    <div>
-                      <div className="font-medium text-brand-green">التوقيع</div>
-                      <div className="text-sm text-gray-600">
-                        {visit.signature_image ? 
-                          <a href={visit.signature_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">عرض التوقيع</a> : 
-                          'غير متوفر'
-                        }
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">💬</span>
+                          <div>
+                            <div className="font-medium text-brand-green">ملاحظات المندوب</div>
+                            <div className="text-sm text-gray-600">{visit.agent_notes || 'لا توجد ملاحظات'}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">🔒</span>
+                          <div>
+                            <div className="font-medium text-brand-green">ملاحظات داخلية</div>
+                            <div className="text-sm text-gray-600">{visit.internal_notes || 'لا توجد ملاحظات'}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">📍</span>
+                          <div>
+                            <div className="font-medium text-brand-green">إحداثيات GPS</div>
+                            <div className="text-sm text-gray-600">
+                              {visit.gps_latitude && visit.gps_longitude ? 
+                                `${visit.gps_latitude}, ${visit.gps_longitude}` : 
+                                'غير محدد'
+                              }
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">✍️</span>
+                          <div>
+                            <div className="font-medium text-brand-green">التوقيع</div>
+                            <div className="text-sm text-gray-600">
+                              {visit.signature_image ? 
+                                <a href={visit.signature_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">عرض التوقيع</a> : 
+                                'غير متوفر'
+                              }
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Vendor Information */}
-              {visit.vendor && (
-                <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                  <h4 className="font-bold text-brand-green mb-3 flex items-center gap-2">
-                    <span className="text-gold">🏢</span>
-                    بيانات التاجر
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div><span className="font-medium text-brand-green">الاسم التجاري:</span> {visit.vendor.commercial_name}</div>
-                    <div><span className="font-medium text-brand-green">اسم المالك:</span> {visit.vendor.owner_name}</div>
-                  </div>
-                </div>
-              )}
+                    {/* Vendor Information */}
+                    {visit.vendor && (
+                      <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                        <h4 className="font-bold text-brand-green mb-3 flex items-center gap-2">
+                          <span className="text-gold">🏢</span>
+                          بيانات التاجر
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div><span className="font-medium text-brand-green">الاسم التجاري:</span> {visit.vendor.commercial_name}</div>
+                          <div><span className="font-medium text-brand-green">اسم المالك:</span> {visit.vendor.owner_name}</div>
+                        </div>
+                      </div>
+                    )}
 
-              {/* Branch Information */}
-              {visit.branch && (
-                <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                  <h4 className="font-bold text-brand-green mb-3 flex items-center gap-2">
-                    <span className="text-gold">🏪</span>
-                    بيانات الفرع
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div><span className="font-medium text-brand-green">اسم الفرع:</span> {visit.branch.name}</div>
-                    {visit.branch.city && <div><span className="font-medium text-brand-green">المدينة:</span> {visit.branch.city}</div>}
-                    {visit.branch.district && <div><span className="font-medium text-brand-green">الحي:</span> {visit.branch.district}</div>}
-                  </div>
-                </div>
-              )}
+                    {/* Branch Information */}
+                    {visit.branch && (
+                      <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                        <h4 className="font-bold text-brand-green mb-3 flex items-center gap-2">
+                          <span className="text-gold">🏪</span>
+                          بيانات الفرع
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div><span className="font-medium text-brand-green">اسم الفرع:</span> {visit.branch.name}</div>
+                          {visit.branch.city && <div><span className="font-medium text-brand-green">المدينة:</span> {visit.branch.city}</div>}
+                          {visit.branch.district && <div><span className="font-medium text-brand-green">الحي:</span> {visit.branch.district}</div>}
+                        </div>
+                      </div>
+                    )}
 
-              {/* Package Information */}
-              {visit.package && (
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <h4 className="font-bold text-brand-green mb-3 flex items-center gap-2">
-                    <span className="text-gold">📦</span>
-                    بيانات البكج
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div><span className="font-medium text-brand-green">اسم البكج:</span> {visit.package.name}</div>
-                    {visit.package.description && <div><span className="font-medium text-brand-green">الوصف:</span> {visit.package.description}</div>}
-                    {visit.package.price && <div><span className="font-medium text-brand-green">السعر:</span> {visit.package.price} ريال</div>}
-                    {visit.package.product_limit && <div><span className="font-medium text-brand-green">حد المنتجات:</span> {visit.package.product_limit}</div>}
-                    {visit.package.duration_in_days && <div><span className="font-medium text-brand-green">المدة:</span> {visit.package.duration_in_days} يوم</div>}
-                  </div>
-                </div>
-              )}
+                    {/* Package Information */}
+                    {visit.package && (
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <h4 className="font-bold text-brand-green mb-3 flex items-center gap-2">
+                          <span className="text-gold">📦</span>
+                          بيانات البكج
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div><span className="font-medium text-brand-green">اسم البكج:</span> {visit.package.name}</div>
+                          {visit.package.description && <div><span className="font-medium text-brand-green">الوصف:</span> {visit.package.description}</div>}
+                          {visit.package.price && <div><span className="font-medium text-brand-green">السعر:</span> {visit.package.price} ريال</div>}
+                          {visit.package.product_limit && <div><span className="font-medium text-brand-green">حد المنتجات:</span> {visit.package.product_limit}</div>}
+                          {visit.package.duration_in_days && <div><span className="font-medium text-brand-green">المدة:</span> {visit.package.duration_in_days} يوم</div>}
+                        </div>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           )) : (
             <div className="bg-brand-white rounded-2xl shadow-lg p-12 text-center">

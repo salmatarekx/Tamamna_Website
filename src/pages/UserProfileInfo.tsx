@@ -1,4 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Agent {
   id: number;
@@ -124,7 +130,7 @@ const UserProfileInfo: React.FC = () => {
 
       {/* Branches Section */}
       <div className="bg-brand-white rounded-2xl shadow-lg p-6 mb-8">
-        {/* Search Box - Above the title */}
+        {/* Search Box */}
         <div className="mb-6">
           <input
             type="text"
@@ -144,169 +150,177 @@ const UserProfileInfo: React.FC = () => {
           </h3>
         </div>
         
+        {/* Branches List with Accordion */}
         <div className="space-y-4">
           {filteredBranches.length > 0 ? filteredBranches.map((branch) => (
-            <div key={branch.id} className="bg-gradient-to-r from-gray-50 to-white border-2 border-gold-light rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:border-gold">
-              {/* Branch Header */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
-                    <span className="text-xl text-white">🏪</span>
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-brand-green">{branch.name}</h4>
-                    <p className="text-sm text-gray-500">رقم الفرع: {branch.id}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">تاريخ الإنشاء</div>
-                  <div className="font-medium text-brand-green">{formatDate(branch.created_at)}</div>
-                </div>
-              </div>
+            <div key={branch.id} className="bg-gradient-to-r from-gray-50 to-white border-2 border-gold-light rounded-xl hover:shadow-lg transition-all duration-300 hover:border-gold overflow-hidden">
+              <Accordion type="single" collapsible>
+                <AccordionItem value={`branch-${branch.id}`} className="border-none">
+                  <AccordionTrigger className="px-5 py-4 w-full hover:no-underline">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                          <span className="text-xl text-white">🏪</span>
+                        </div>
+                        <div className="text-right">
+                          <h4 className="text-lg font-bold text-brand-green">{branch.name}</h4>
+                          <p className="text-sm text-gray-500">رقم الفرع: {branch.id}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-500">تاريخ الإنشاء</div>
+                        <div className="font-medium text-brand-green">{formatDate(branch.created_at)}</div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  
+                  <AccordionContent className="px-5 pb-5">
+                    {/* Branch Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">📱</span>
+                          <span className="font-medium text-brand-green">الجوال:</span>
+                          <span className="text-gray-700">{branch.mobile || 'غير متوفر'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">📧</span>
+                          <span className="font-medium text-brand-green">البريد الإلكتروني:</span>
+                          <span className="text-gray-700">{branch.email || 'غير متوفر'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">📍</span>
+                          <span className="font-medium text-brand-green">العنوان:</span>
+                          <span className="text-gray-700">{branch.address || 'غير متوفر'}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">🏙️</span>
+                          <span className="font-medium text-brand-green">المدينة:</span>
+                          <span className="text-gray-700">{branch.city || 'غير متوفر'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">🏘️</span>
+                          <span className="font-medium text-brand-green">الحي:</span>
+                          <span className="text-gray-700">{branch.district || 'غير متوفر'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gold text-lg">🗺️</span>
+                          <span className="font-medium text-brand-green">رابط الموقع:</span>
+                          {branch.location_url ? (
+                            <a href={branch.location_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">عرض الخريطة</a>
+                          ) : (
+                            <span className="text-gray-700">غير متوفر</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-              {/* Branch Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">📱</span>
-                    <span className="font-medium text-brand-green">الجوال:</span>
-                    <span className="text-gray-700">{branch.mobile || 'غير متوفر'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">📧</span>
-                    <span className="font-medium text-brand-green">البريد الإلكتروني:</span>
-                    <span className="text-gray-700">{branch.email || 'غير متوفر'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">📍</span>
-                    <span className="font-medium text-brand-green">العنوان:</span>
-                    <span className="text-gray-700">{branch.address || 'غير متوفر'}</span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">🏙️</span>
-                    <span className="font-medium text-brand-green">المدينة:</span>
-                    <span className="text-gray-700">{branch.city || 'غير متوفر'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">🏘️</span>
-                    <span className="font-medium text-brand-green">الحي:</span>
-                    <span className="text-gray-700">{branch.district || 'غير متوفر'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gold text-lg">🗺️</span>
-                    <span className="font-medium text-brand-green">رابط الموقع:</span>
-                    {branch.location_url ? (
-                      <a href={branch.location_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">عرض الخريطة</a>
-                    ) : (
-                      <span className="text-gray-700">غير متوفر</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Vendor Information */}
-              {branch.vendor && (
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-gold text-xl">👤</span>
-                    <h5 className="font-bold text-brand-green">بيانات التاجر المرتبط</h5>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">اسم المالك:</span>
-                      <span className="text-gray-700">{branch.vendor.owner_name || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">الاسم التجاري:</span>
-                      <span className="text-gray-700">{branch.vendor.commercial_name || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">رقم السجل التجاري:</span>
-                      <span className="text-gray-700">{branch.vendor.commercial_registration_number || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">الجوال:</span>
-                      <span className="text-gray-700">{branch.vendor.mobile || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">واتساب:</span>
-                      <span className="text-gray-700">{branch.vendor.whatsapp || 'غير متوفر'}</span>
-                    </div>
-                    {branch.vendor.snapchat && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">سناب شات:</span>
-                        <span className="text-gray-700">{branch.vendor.snapchat}</span>
+                    {/* Vendor Information */}
+                    {branch.vendor && (
+                      <div className="bg-white rounded-xl p-4 border border-gray-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-gold text-xl">👤</span>
+                          <h5 className="font-bold text-brand-green">بيانات التاجر المرتبط</h5>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">اسم المالك:</span>
+                            <span className="text-gray-700">{branch.vendor.owner_name || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">الاسم التجاري:</span>
+                            <span className="text-gray-700">{branch.vendor.commercial_name || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">رقم السجل التجاري:</span>
+                            <span className="text-gray-700">{branch.vendor.commercial_registration_number || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">الجوال:</span>
+                            <span className="text-gray-700">{branch.vendor.mobile || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">واتساب:</span>
+                            <span className="text-gray-700">{branch.vendor.whatsapp || 'غير متوفر'}</span>
+                          </div>
+                          {branch.vendor.snapchat && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">سناب شات:</span>
+                              <span className="text-gray-700">{branch.vendor.snapchat}</span>
+                            </div>
+                          )}
+                          {branch.vendor.instagram && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">انستجرام:</span>
+                              <span className="text-gray-700">{branch.vendor.instagram}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">البريد الإلكتروني:</span>
+                            <span className="text-gray-700">{branch.vendor.email || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">المدينة:</span>
+                            <span className="text-gray-700">{branch.vendor.city || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">الحي:</span>
+                            <span className="text-gray-700">{branch.vendor.district || 'غير متوفر'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-brand-green">نوع النشاط:</span>
+                            <span className="text-gray-700">{branch.vendor.activity_type || 'غير متوفر'}</span>
+                          </div>
+                          {branch.vendor.activity_start_date && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">تاريخ بدء النشاط:</span>
+                              <span className="text-gray-700">{formatDate(branch.vendor.activity_start_date)}</span>
+                            </div>
+                          )}
+                          {branch.vendor.has_commercial_registration && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">يوجد سجل تجاري:</span>
+                              <span className="text-gray-700">{branch.vendor.has_commercial_registration === 'yes' ? 'نعم' : 'لا'}</span>
+                            </div>
+                          )}
+                          {typeof branch.vendor.has_online_platform !== 'undefined' && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">يوجد منصة إلكترونية:</span>
+                              <span className="text-gray-700">{branch.vendor.has_online_platform ? 'نعم' : 'لا'}</span>
+                            </div>
+                          )}
+                          {branch.vendor.previous_platform_experience && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">خبرة سابقة بالمنصات:</span>
+                              <span className="text-gray-700">{branch.vendor.previous_platform_experience}</span>
+                            </div>
+                          )}
+                          {branch.vendor.previous_platform_issues && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">مشاكل سابقة:</span>
+                              <span className="text-gray-700">{branch.vendor.previous_platform_issues}</span>
+                            </div>
+                          )}
+                          {typeof branch.vendor.has_product_photos !== 'undefined' && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">يوجد صور منتجات:</span>
+                              <span className="text-gray-700">{branch.vendor.has_product_photos ? 'نعم' : 'لا'}</span>
+                            </div>
+                          )}
+                          {branch.vendor.notes && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-brand-green">ملاحظات:</span>
+                              <span className="text-gray-700">{branch.vendor.notes}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
-                    {branch.vendor.instagram && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">انستجرام:</span>
-                        <span className="text-gray-700">{branch.vendor.instagram}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">البريد الإلكتروني:</span>
-                      <span className="text-gray-700">{branch.vendor.email || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">المدينة:</span>
-                      <span className="text-gray-700">{branch.vendor.city || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">الحي:</span>
-                      <span className="text-gray-700">{branch.vendor.district || 'غير متوفر'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-brand-green">نوع النشاط:</span>
-                      <span className="text-gray-700">{branch.vendor.activity_type || 'غير متوفر'}</span>
-                    </div>
-                    {branch.vendor.activity_start_date && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">تاريخ بدء النشاط:</span>
-                        <span className="text-gray-700">{formatDate(branch.vendor.activity_start_date)}</span>
-                      </div>
-                    )}
-                    {branch.vendor.has_commercial_registration && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">يوجد سجل تجاري:</span>
-                        <span className="text-gray-700">{branch.vendor.has_commercial_registration === 'yes' ? 'نعم' : 'لا'}</span>
-                      </div>
-                    )}
-                    {typeof branch.vendor.has_online_platform !== 'undefined' && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">يوجد منصة إلكترونية:</span>
-                        <span className="text-gray-700">{branch.vendor.has_online_platform ? 'نعم' : 'لا'}</span>
-                      </div>
-                    )}
-                    {branch.vendor.previous_platform_experience && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">خبرة سابقة بالمنصات:</span>
-                        <span className="text-gray-700">{branch.vendor.previous_platform_experience}</span>
-                      </div>
-                    )}
-                    {branch.vendor.previous_platform_issues && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">مشاكل سابقة:</span>
-                        <span className="text-gray-700">{branch.vendor.previous_platform_issues}</span>
-                      </div>
-                    )}
-                    {typeof branch.vendor.has_product_photos !== 'undefined' && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">يوجد صور منتجات:</span>
-                        <span className="text-gray-700">{branch.vendor.has_product_photos ? 'نعم' : 'لا'}</span>
-                      </div>
-                    )}
-                    {branch.vendor.notes && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-brand-green">ملاحظات:</span>
-                        <span className="text-gray-700">{branch.vendor.notes}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           )) : (
             <div className="text-center py-12">

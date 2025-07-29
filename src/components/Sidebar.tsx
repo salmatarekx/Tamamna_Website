@@ -12,6 +12,15 @@ const navItems = [
 const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    // Clear all data from localStorage
+    localStorage.clear();
+    // Close the sidebar
+    onClose();
+    // Navigate to login page
+    navigate('/login');
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Overlay */}
@@ -23,7 +32,6 @@ const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="w-16 h-16 rounded-full bg-gold flex items-center justify-center mb-2">
             <FaUser className="text-3xl text-white" />
           </div>
-         
         </div>
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6">
@@ -57,7 +65,7 @@ const Sidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="px-4 py-4">
           <button
             className="flex items-center gap-2 text-[#153959] hover:text-[#24BFA3] text-base font-medium"
-            onClick={() => { /* Add sign out logic here */ onClose(); }}
+            onClick={handleLogout}
           >
             <FaSignOutAlt className="text-lg" />
             <span>تسجيل الخروج</span>
