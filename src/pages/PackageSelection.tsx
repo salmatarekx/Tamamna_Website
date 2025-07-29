@@ -59,40 +59,72 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
       }
     });
 
-    // Handle custom role logic with proper type checking
-    const predefinedRoles = ['owner', 'manager', 'custom'];
+    // Handle met_person_role and custom_role logic
     const metPersonRole = form.met_person_role;
     
-    if (metPersonRole && typeof metPersonRole === 'string' && !predefinedRoles.includes(metPersonRole)) {
-      formData.append('custom_role', metPersonRole);
-      // Remove the met_person_role from formData since we're sending custom_role instead
-      formData.delete('met_person_role');
+    if (metPersonRole && typeof metPersonRole === 'string') {
+      if (metPersonRole === 'owner' || metPersonRole === 'manager') {
+        // Send predefined roles as is
+        formData.append('met_person_role', metPersonRole);
+      } else {
+        // For any other value, treat it as a custom role
+        formData.append('met_person_role', 'other');
+        formData.append('custom_role', metPersonRole);
+      }
+    }
+
+    // Validate required fields before submission
+    if (!selected) {
+      setError('الرجاء اختيار باقة');
+      setLoading(false);
+      return;
     }
 
     try {
+      // Log form data for debugging
+      console.log('Submitting form data:', Object.fromEntries(formData.entries()));
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/vendor-visits`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData
       });
       
+      // Log the raw response for debugging
+      console.log('Response status:', res.status);
+      const data = await res.json();
+      console.log('Response data:', data);
+
       if (res.ok || res.status === 201) {
-        setShowSnackbar(true);
-        setTimeout(() => {
-          setShowSnackbar(false);
-          navigate('/dashboard');
-        }, 2000);
+        if (data.success === false) {
+          // Handle case where response is OK but operation failed
+          setError(data.message || 'فشل في حفظ تفاصيل الزيارة');
+        } else {
+          setShowSnackbar(true);
+          setTimeout(() => {
+            setShowSnackbar(false);
+            navigate('/dashboard');
+          }, 2000);
+        }
       } else {
-        const data = await res.json();
-        // Handle validation errors properly
+        // Handle different types of errors
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat().join(', ');
           setError(errorMessages);
+        } else if (data.message) {
+          setError(data.message);
+        } else if (res.status === 401) {
+          setError('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
+          localStorage.removeItem('agent_token');
+          navigate('/login');
         } else {
-          setError(data.message || 'فشل في حفظ تفاصيل الزيارة');
+          setError('فشل في حفظ تفاصيل الزيارة');
         }
       }
     } catch (err) {
+      console.error('Error submitting form:', err);
       setError('حدث خطأ أثناء الاتصال بالخادم');
     } finally {
       setLoading(false);
