@@ -727,7 +727,7 @@ const AddNewMerchant: React.FC = () => {
                 <option value="wholesale">جملة</option>
                 <option value="retail">تجزئة</option>
                 <option value="both">كليهما</option>
-                <option value="custom">اختيار آخر</option>
+                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomActivityType && (
                 <input 
@@ -761,7 +761,7 @@ const AddNewMerchant: React.FC = () => {
                 <option value="yes">نعم</option>
                 <option value="no">لا</option>
                 <option value="not_sure">غير متأكد</option>
-                <option value="custom">اختيار آخر</option>
+                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomCommercialRegistration && (
                 <input 
@@ -790,7 +790,7 @@ const AddNewMerchant: React.FC = () => {
                 <option value="">اختر</option>
                 <option value="true">نعم</option>
                 <option value="false">لا</option>
-                <option value="custom">اختيار آخر</option>
+                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomOnlinePlatform && (
                 <input 
@@ -824,7 +824,7 @@ const AddNewMerchant: React.FC = () => {
                 <option value="">اختر</option>
                 <option value="true">نعم</option>
                 <option value="false">لا</option>
-                <option value="custom">اختيار آخر</option>
+                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomProductPhotos && (
                 <input 
