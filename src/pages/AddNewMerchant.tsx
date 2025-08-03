@@ -1,6 +1,46 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Snackbar Component for Error Messages
+const Snackbar: React.FC<{
+  message: string;
+  type: 'error' | 'success' | 'warning';
+  isVisible: boolean;
+  onClose: () => void;
+}> = ({ message, type, isVisible, onClose }) => {
+  React.useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // Auto close after 5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
+  if (!isVisible) return null;
+
+  const bgColor = {
+    error: 'bg-red-500',
+    success: 'bg-green-500',
+    warning: 'bg-yellow-500'
+  }[type];
+
+  return (
+    <div className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-md animate-slide-in`}>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">{message}</span>
+        <button 
+          onClick={onClose}
+          className="ml-4 text-white hover:text-gray-200 text-lg font-bold"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Camera Component
 const CameraCapture: React.FC<{
   onCapture: (file: File) => void;
@@ -84,7 +124,7 @@ const CameraCapture: React.FC<{
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-4 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-brand-green">التقاط صورة</h3>
+          <h3 className="text-lg font-bold text-green-600">التقاط صورة</h3>
           <button
             onClick={() => {
               stopCamera();
@@ -110,7 +150,7 @@ const CameraCapture: React.FC<{
         <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={capturePhoto}
-            className="bg-gold text-white px-6 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors"
+            className="bg-yellow-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-yellow-600 transition-colors"
           >
             📸 التقاط الصورة
           </button>
@@ -142,6 +182,8 @@ const AddNewMerchant: React.FC = () => {
     instagram: '',
     email: '',
     location_url: '',
+    latitude: '', // إضافة latitude
+    longitude: '', // إضافة longitude
     city: '',
     district: '',
     street_name: '',
@@ -165,6 +207,26 @@ const AddNewMerchant: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState('+966'); // Default to Saudi Arabia
   const [selectedWhatsAppCountryCode, setSelectedWhatsAppCountryCode] = useState('+966'); // Default to Saudi Arabia
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    isVisible: false,
+    message: '',
+    type: 'error' as 'error' | 'success' | 'warning'
+  });
+
+  const showSnackbar = (message: string, type: 'error' | 'success' | 'warning' = 'error') => {
+    setSnackbar({
+      isVisible: true,
+      message,
+      type
+    });
+  };
+
+  const hideSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, isVisible: false }));
+  };
 
   // GCC Countries with calling codes
   const gccCountries = [
@@ -187,13 +249,14 @@ const AddNewMerchant: React.FC = () => {
   
   // Validation states
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   // Check authentication on component mount
   React.useEffect(() => {
     const token = localStorage.getItem('agent_token');
     if (!token) {
-      alert('يجب تسجيل الدخول أولاً');
+      showSnackbar('يجب تسجيل الدخول أولاً', 'warning');
       navigate('/login');
     }
   }, [navigate]);
@@ -218,6 +281,16 @@ const AddNewMerchant: React.FC = () => {
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, files } = e.target as HTMLInputElement;
+    
+    // Clear specific field error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+
     if (type === 'file' && files) {
       if (name === 'other_attachments') {
         setForm(prev => ({ ...prev, [name]: Array.from(files) }));
@@ -304,6 +377,57 @@ const AddNewMerchant: React.FC = () => {
     setCameraField(null);
   };
 
+  // Get current location and generate Google Maps URL
+  const getCurrentLocation = () => {
+    setIsGettingLocation(true);
+    
+    if (!navigator.geolocation) {
+      showSnackbar('المتصفح لا يدعم خدمة تحديد الموقع', 'error');
+      setIsGettingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        
+        setForm(prev => ({ 
+          ...prev, 
+          location_url: googleMapsUrl,
+          latitude: latitude.toString(),
+          longitude: longitude.toString()
+        }));
+        
+        showSnackbar('تم الحصول على الموقع بنجاح', 'success');
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        let errorMessage = 'فشل في الحصول على الموقع';
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'تم رفض الإذن للوصول إلى الموقع. يرجى السماح بالوصول للموقع في إعدادات المتصفح';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'معلومات الموقع غير متوفرة';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'انتهت مهلة طلب الموقع. يرجى المحاولة مرة أخرى';
+            break;
+        }
+        
+        showSnackbar(errorMessage, 'error');
+        setIsGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
   // Validation function
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -371,6 +495,7 @@ const AddNewMerchant: React.FC = () => {
     
     // Validate form before submission
     if (!validateForm()) {
+      showSnackbar('يرجى تصحيح الأخطاء في النموذج قبل الإرسال', 'warning');
       return;
     }
     
@@ -378,10 +503,12 @@ const AddNewMerchant: React.FC = () => {
     
     // Check if token exists
     if (!token) {
-      alert('يجب تسجيل الدخول أولاً');
+      showSnackbar('يجب تسجيل الدخول أولاً', 'warning');
       navigate('/login');
       return;
     }
+    
+    setIsSubmitting(true);
     
     // Prepare FormData for file upload
     const formData = new FormData();
@@ -422,6 +549,7 @@ const AddNewMerchant: React.FC = () => {
         formData.append(key, value as any);
       }
     });
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/vendors`, {
         method: 'POST',
@@ -430,33 +558,68 @@ const AddNewMerchant: React.FC = () => {
         },
         body: formData
       });
+
+      const result = await response.json();
+
       if (response.ok || response.status === 201) {
-        const result = await response.json();
         setMerchant(result.data);
         setShowSuccess(true);
+        showSnackbar('تم حفظ التاجر بنجاح', 'success');
         navigate('/add-branch', { state: { vendor: result.data } });
         return;
       } else {
-        const errorData = await response.json();
+        // Handle different types of errors
         if (response.status === 401) {
-          alert('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
+          showSnackbar('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى', 'warning');
           localStorage.removeItem('agent_token');
           navigate('/login');
+        } else if (response.status === 422) {
+          // Handle validation errors from server
+          if (result.errors && typeof result.errors === 'object') {
+            // Set field-specific errors
+            const serverErrors: {[key: string]: string} = {};
+            Object.keys(result.errors).forEach(field => {
+              const errorMessages = result.errors[field];
+              if (Array.isArray(errorMessages)) {
+                serverErrors[field] = errorMessages[0]; // Take first error message
+              } else if (typeof errorMessages === 'string') {
+                serverErrors[field] = errorMessages;
+              }
+            });
+            setErrors(serverErrors);
+            
+            // Show general validation error message
+            showSnackbar(result.message || 'يوجد أخطاء في البيانات المدخلة', 'error');
+          } else {
+            showSnackbar(result.message || 'يوجد أخطاء في البيانات المدخلة', 'error');
+          }
+        } else if (response.status >= 500) {
+          showSnackbar('حدث خطأ في الخادم. يرجى المحاولة مرة أخرى لاحقاً', 'error');
         } else {
-          alert(`حدث خطأ أثناء حفظ التاجر: ${errorData.message || 'خطأ غير معروف'}`);
+          showSnackbar(result.message || 'حدث خطأ أثناء حفظ التاجر', 'error');
         }
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('حدث خطأ في الاتصال بالخادم.');
+      showSnackbar('حدث خطأ في الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const inputClass = "w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal";
+  const inputClass = "w-full px-3 py-2 border border-yellow-400 rounded-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal";
   const inputStyle = { backgroundColor: '#d6f1e9' };
 
   return (
     <div className="p-4 max-w-4xl mx-auto mt-16" dir="rtl">
+      {/* Snackbar */}
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        isVisible={snackbar.isVisible}
+        onClose={hideSnackbar}
+      />
+
       {showSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 text-center font-bold text-lg shadow">
           تم الحفظ بنجاح
@@ -481,6 +644,7 @@ const AddNewMerchant: React.FC = () => {
                 className={`${inputClass} ${errors.owner_name ? 'border-red-500' : ''}`} 
                 style={inputStyle} 
                 placeholder="اسم صاحب النشاط" 
+                disabled={isSubmitting}
               />
               {errors.owner_name && (
                 <div className="mt-1 text-sm text-red-600">{errors.owner_name}</div>
@@ -495,6 +659,7 @@ const AddNewMerchant: React.FC = () => {
                 className={`${inputClass} ${errors.commercial_name ? 'border-red-500' : ''}`} 
                 style={inputStyle} 
                 placeholder="الاسم التجاري" 
+                disabled={isSubmitting}
               />
               {errors.commercial_name && (
                 <div className="mt-1 text-sm text-red-600">{errors.commercial_name}</div>
@@ -510,6 +675,7 @@ const AddNewMerchant: React.FC = () => {
                 style={inputStyle} 
                 placeholder="10 أرقام فقط" 
                 maxLength={10}
+                disabled={isSubmitting}
               />
               {errors.commercial_registration_number && (
                 <div className="mt-1 text-sm text-red-600">{errors.commercial_registration_number}</div>
@@ -523,9 +689,10 @@ const AddNewMerchant: React.FC = () => {
                   <div className="relative country-dropdown">
                     <button
                       type="button"
-                      onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="flex items-center gap-2 px-3 py-2 border border-gold rounded-r-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal min-w-[120px]"
+                      onClick={() => !isSubmitting && setShowCountryDropdown(!showCountryDropdown)}
+                      className="flex items-center gap-2 px-3 py-2 border border-yellow-400 rounded-r-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal min-w-[120px] disabled:opacity-50"
                       style={{ backgroundColor: '#d6f1e9' }}
+                      disabled={isSubmitting}
                     >
                       <span className="text-lg">{gccCountries.find(c => c.code === selectedCountryCode)?.flag}</span>
                       <span className="text-sm font-medium">{selectedCountryCode}</span>
@@ -533,7 +700,7 @@ const AddNewMerchant: React.FC = () => {
                     </button>
                     
                     {/* Dropdown Menu */}
-                    {showCountryDropdown && (
+                    {showCountryDropdown && !isSubmitting && (
                       <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
                         {gccCountries.map((country) => (
                           <button
@@ -559,10 +726,11 @@ const AddNewMerchant: React.FC = () => {
                     name="mobile" 
                     value={form.mobile} 
                     onChange={handleFormChange} 
-                    className="flex-1 px-3 py-2 border border-gold border-r-0 rounded-l-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal" 
+                    className={`flex-1 px-3 py-2 border border-yellow-400 border-r-0 rounded-l-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal ${errors.mobile ? 'border-red-500' : ''}`}
                     style={{ backgroundColor: '#d6f1e9' }}
                     placeholder="9 أرقام فقط" 
                     maxLength={9}
+                    disabled={isSubmitting}
                   />
                   {form.mobile && (
                     <div className="absolute -bottom-6 right-0 text-xs text-gray-500">
@@ -585,6 +753,7 @@ const AddNewMerchant: React.FC = () => {
                 style={inputStyle} 
                 placeholder="10 أرقام فقط" 
                 maxLength={10}
+                disabled={isSubmitting}
               />
               {errors.id_number && (
                 <div className="mt-1 text-sm text-red-600">{errors.id_number}</div>
@@ -599,6 +768,7 @@ const AddNewMerchant: React.FC = () => {
                 className={`${inputClass} ${errors.license_number ? 'border-red-500' : ''}`} 
                 style={inputStyle} 
                 placeholder="رقم الرخصه" 
+                disabled={isSubmitting}
               />
               {errors.license_number && (
                 <div className="mt-1 text-sm text-red-600">{errors.license_number}</div>
@@ -612,9 +782,10 @@ const AddNewMerchant: React.FC = () => {
                   <div className="relative whatsapp-country-dropdown">
                     <button
                       type="button"
-                      onClick={() => setShowWhatsAppCountryDropdown(!showWhatsAppCountryDropdown)}
-                      className="flex items-center gap-2 px-3 py-2 border border-gold rounded-r-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal min-w-[120px]"
+                      onClick={() => !isSubmitting && setShowWhatsAppCountryDropdown(!showWhatsAppCountryDropdown)}
+                      className="flex items-center gap-2 px-3 py-2 border border-yellow-400 rounded-r-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal min-w-[120px] disabled:opacity-50"
                       style={{ backgroundColor: '#d6f1e9' }}
+                      disabled={isSubmitting}
                     >
                       <span className="text-lg">{gccCountries.find(c => c.code === selectedWhatsAppCountryCode)?.flag}</span>
                       <span className="text-sm font-medium">{selectedWhatsAppCountryCode}</span>
@@ -622,7 +793,7 @@ const AddNewMerchant: React.FC = () => {
                     </button>
                     
                     {/* WhatsApp Dropdown Menu */}
-                    {showWhatsAppCountryDropdown && (
+                    {showWhatsAppCountryDropdown && !isSubmitting && (
                       <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
                         {gccCountries.map((country) => (
                           <button
@@ -648,10 +819,11 @@ const AddNewMerchant: React.FC = () => {
                     name="whatsapp" 
                     value={form.whatsapp} 
                     onChange={handleFormChange} 
-                    className="flex-1 px-3 py-2 border border-gold border-r-0 rounded-l-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal" 
+                    className={`flex-1 px-3 py-2 border border-yellow-400 border-r-0 rounded-l-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal ${errors.whatsapp ? 'border-red-500' : ''}`}
                     style={{ backgroundColor: '#d6f1e9' }}
                     placeholder="9 أرقام فقط" 
                     maxLength={9}
+                    disabled={isSubmitting}
                   />
                   {form.whatsapp && (
                     <div className="absolute -bottom-6 right-0 text-xs text-gray-500">
@@ -666,11 +838,27 @@ const AddNewMerchant: React.FC = () => {
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">سناب شات</label>
-              <input name="snapchat" value={form.snapchat} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="سناب شات" />
+              <input 
+                name="snapchat" 
+                value={form.snapchat} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="سناب شات" 
+                disabled={isSubmitting}
+              />
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">انستغرام</label>
-              <input name="instagram" value={form.instagram} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="انستغرام" />
+              <input 
+                name="instagram" 
+                value={form.instagram} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="انستغرام" 
+                disabled={isSubmitting}
+              />
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">البريد الإلكتروني *</label>
@@ -682,6 +870,7 @@ const AddNewMerchant: React.FC = () => {
                 style={inputStyle} 
                 placeholder="البريد الإلكتروني" 
                 type="email"
+                disabled={isSubmitting}
               />
               {errors.email && (
                 <div className="mt-1 text-sm text-red-600">{errors.email}</div>
@@ -689,7 +878,47 @@ const AddNewMerchant: React.FC = () => {
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">رابط الموقع الجغرافي (Google Maps)</label>
-              <input name="location_url" value={form.location_url} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رابط الموقع الجغرافي" />
+              <div className="relative flex gap-2">
+                <input 
+                  name="location_url" 
+                  value={form.location_url} 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} flex-1`} 
+                  style={inputStyle} 
+                  placeholder="رابط الموقع الجغرافي" 
+                  disabled={isSubmitting || isGettingLocation}
+                />
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={isSubmitting || isGettingLocation}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
+                  title="الحصول على الموقع الحالي"
+                >
+                  {isGettingLocation ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                      جاري...
+                    </>
+                  ) : (
+                    <>
+                      📍 موقعي
+                    </>
+                  )}
+                </button>
+              </div>
+              {form.location_url && (
+                <div className="mt-2">
+                  <a 
+                    href={form.location_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-700 text-sm underline"
+                  >
+                    فتح الموقع في خرائط Google
+                  </a>
+                </div>
+              )}
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">المدينة *</label>
@@ -700,6 +929,7 @@ const AddNewMerchant: React.FC = () => {
                 className={`${inputClass} ${errors.city ? 'border-red-500' : ''}`} 
                 style={inputStyle} 
                 placeholder="المدينة" 
+                disabled={isSubmitting}
               />
               {errors.city && (
                 <div className="mt-1 text-sm text-red-600">{errors.city}</div>
@@ -707,11 +937,27 @@ const AddNewMerchant: React.FC = () => {
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">الحي</label>
-              <input name="district" value={form.district} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="الحي" />
+              <input 
+                name="district" 
+                value={form.district} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="الحي" 
+                disabled={isSubmitting}
+              />
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">اسم الشارع</label>
-              <input name="street_name" value={form.street_name} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="اسم الشارع" />
+              <input 
+                name="street_name" 
+                value={form.street_name} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="اسم الشارع" 
+                disabled={isSubmitting}
+              />
             </div>
             {/* Activity Type Field */}
             <div>
@@ -722,12 +968,12 @@ const AddNewMerchant: React.FC = () => {
                 onChange={handleFormChange} 
                 className={`${inputClass} ${errors.activity_type ? 'border-red-500' : ''}`} 
                 style={inputStyle}
+                disabled={isSubmitting}
               >
                 <option value="">اختر</option>
                 <option value="wholesale">جملة</option>
                 <option value="retail">تجزئة</option>
                 <option value="both">كليهما</option>
-                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomActivityType && (
                 <input 
@@ -737,6 +983,7 @@ const AddNewMerchant: React.FC = () => {
                   className={`${inputClass} mt-2 ${errors.activity_type ? 'border-red-500' : ''}`} 
                   style={inputStyle} 
                   placeholder="اكتب نوع النشاط المخصص..." 
+                  disabled={isSubmitting}
                 />
               )}
               {errors.activity_type && (
@@ -745,7 +992,15 @@ const AddNewMerchant: React.FC = () => {
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">تاريخ بداية النشاط</label>
-              <input name="activity_start_date" value={form.activity_start_date} onChange={handleFormChange} type="date" className={inputClass} style={inputStyle} />
+              <input 
+                name="activity_start_date" 
+                value={form.activity_start_date} 
+                onChange={handleFormChange} 
+                type="date" 
+                className={inputClass} 
+                style={inputStyle} 
+                disabled={isSubmitting}
+              />
             </div>
             {/* Commercial Registration Field */}
             <div>
@@ -756,12 +1011,12 @@ const AddNewMerchant: React.FC = () => {
                 onChange={handleFormChange} 
                 className={`${inputClass} ${errors.has_commercial_registration ? 'border-red-500' : ''}`} 
                 style={inputStyle}
+                disabled={isSubmitting}
               >
                 <option value="">اختر</option>
                 <option value="yes">نعم</option>
                 <option value="no">لا</option>
                 <option value="not_sure">غير متأكد</option>
-                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomCommercialRegistration && (
                 <input 
@@ -771,6 +1026,7 @@ const AddNewMerchant: React.FC = () => {
                   className={`${inputClass} mt-2 ${errors.has_commercial_registration ? 'border-red-500' : ''}`} 
                   style={inputStyle} 
                   placeholder="اكتب الإجابة المخصصة..." 
+                  disabled={isSubmitting}
                 />
               )}
               {errors.has_commercial_registration && (
@@ -786,11 +1042,11 @@ const AddNewMerchant: React.FC = () => {
                 onChange={handleFormChange} 
                 className={inputClass} 
                 style={inputStyle}
+                disabled={isSubmitting}
               >
                 <option value="">اختر</option>
                 <option value="true">نعم</option>
                 <option value="false">لا</option>
-                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomOnlinePlatform && (
                 <input 
@@ -800,16 +1056,33 @@ const AddNewMerchant: React.FC = () => {
                   className={`${inputClass} mt-2`} 
                   style={inputStyle} 
                   placeholder="اكتب الإجابة المخصصة..." 
+                  disabled={isSubmitting}
                 />
               )}
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">خبرة سابقة مع المنصات</label>
-              <input name="previous_platform_experience" value={form.previous_platform_experience} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="خبرة سابقة مع المنصات" />
+              <input 
+                name="previous_platform_experience" 
+                value={form.previous_platform_experience} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="خبرة سابقة مع المنصات" 
+                disabled={isSubmitting}
+              />
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">مشاكل سابقة مع المنصات</label>
-              <input name="previous_platform_issues" value={form.previous_platform_issues} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="مشاكل سابقة مع المنصات" />
+              <input 
+                name="previous_platform_issues" 
+                value={form.previous_platform_issues} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="مشاكل سابقة مع المنصات" 
+                disabled={isSubmitting}
+              />
             </div>
             {/* Product Photos Field */}
             <div>
@@ -820,11 +1093,11 @@ const AddNewMerchant: React.FC = () => {
                 onChange={handleFormChange} 
                 className={inputClass} 
                 style={inputStyle}
+                disabled={isSubmitting}
               >
                 <option value="">اختر</option>
                 <option value="true">نعم</option>
                 <option value="false">لا</option>
-                {/* <option value="custom">اختيار آخر</option> */}
               </select>
               {showCustomProductPhotos && (
                 <input 
@@ -834,22 +1107,40 @@ const AddNewMerchant: React.FC = () => {
                   className={`${inputClass} mt-2`} 
                   style={inputStyle} 
                   placeholder="اكتب الإجابة المخصصة..." 
+                  disabled={isSubmitting}
                 />
               )}
             </div>
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">ملاحظات</label>
-              <textarea name="notes" value={form.notes} onChange={handleFormChange} className="w-full px-3 py-2 border border-gold rounded-2xl bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal" style={inputStyle} placeholder="ملاحظات" />
+              <textarea 
+                name="notes" 
+                value={form.notes} 
+                onChange={handleFormChange} 
+                className="w-full px-3 py-2 border border-yellow-400 rounded-2xl bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal" 
+                style={inputStyle} 
+                placeholder="ملاحظات" 
+                disabled={isSubmitting}
+              />
             </div>
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">صورة واجهة المحل</label>
               <div className="relative">
-                <input name="shop_front_image" type="file" accept="image/*" onChange={handleFormChange} className={`${inputClass} pr-8`} style={inputStyle} />
+                <input 
+                  name="shop_front_image" 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} pr-8`} 
+                  style={inputStyle} 
+                  disabled={isSubmitting}
+                />
                 <button
                   type="button"
-                  onClick={() => handleCameraCapture('shop_front_image')}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gold hover:text-gold-dark transition-colors text-2xl"
+                  onClick={() => !isSubmitting && handleCameraCapture('shop_front_image')}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 hover:text-yellow-600 transition-colors text-2xl disabled:opacity-50"
                   title="التقاط صورة بالكاميرا"
+                  disabled={isSubmitting}
                 >
                   📷
                 </button>
@@ -861,12 +1152,21 @@ const AddNewMerchant: React.FC = () => {
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">صورة السجل التجاري</label>
               <div className="relative">
-                <input name="commercial_registration_image" type="file" accept="image/*" onChange={handleFormChange} className={`${inputClass} pr-8`} style={inputStyle} />
+                <input 
+                  name="commercial_registration_image" 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} pr-8`} 
+                  style={inputStyle} 
+                  disabled={isSubmitting}
+                />
                 <button
                   type="button"
-                  onClick={() => handleCameraCapture('commercial_registration_image')}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gold hover:text-gold-dark transition-colors text-2xl"
+                  onClick={() => !isSubmitting && handleCameraCapture('commercial_registration_image')}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 hover:text-yellow-600 transition-colors text-2xl disabled:opacity-50"
                   title="التقاط صورة بالكاميرا"
+                  disabled={isSubmitting}
                 >
                   📷
                 </button>
@@ -878,12 +1178,21 @@ const AddNewMerchant: React.FC = () => {
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">صورة الهوية</label>
               <div className="relative">
-                <input name="id_image" type="file" accept="image/*" onChange={handleFormChange} className={`${inputClass} pr-8`} style={inputStyle} />
+                <input 
+                  name="id_image" 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} pr-8`} 
+                  style={inputStyle} 
+                  disabled={isSubmitting}
+                />
                 <button
                   type="button"
-                  onClick={() => handleCameraCapture('id_image')}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gold hover:text-gold-dark transition-colors text-2xl"
+                  onClick={() => !isSubmitting && handleCameraCapture('id_image')}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 hover:text-yellow-600 transition-colors text-2xl disabled:opacity-50"
                   title="التقاط صورة بالكاميرا"
+                  disabled={isSubmitting}
                 >
                   📷
                 </button>
@@ -895,12 +1204,21 @@ const AddNewMerchant: React.FC = () => {
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">صورة الرخصة</label>
               <div className="relative">
-                <input name="license_photos" type="file" accept="image/*" onChange={handleFormChange} className={`${inputClass} pr-8`} style={inputStyle} />
+                <input 
+                  name="license_photos" 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} pr-8`} 
+                  style={inputStyle} 
+                  disabled={isSubmitting}
+                />
                 <button
                   type="button"
-                  onClick={() => handleCameraCapture('license_photos')}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gold hover:text-gold-dark transition-colors text-2xl"
+                  onClick={() => !isSubmitting && handleCameraCapture('license_photos')}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 hover:text-yellow-600 transition-colors text-2xl disabled:opacity-50"
                   title="التقاط صورة بالكاميرا"
+                  disabled={isSubmitting}
                 >
                   📷
                 </button>
@@ -912,12 +1230,22 @@ const AddNewMerchant: React.FC = () => {
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">مرفقات أخرى (اختياري، يمكن اختيار أكثر من ملف)</label>
               <div className="relative">
-                <input name="other_attachments" type="file" accept="image/*,application/pdf" multiple onChange={handleFormChange} className={`${inputClass} pr-8`} style={inputStyle} />
+                <input 
+                  name="other_attachments" 
+                  type="file" 
+                  accept="image/*,application/pdf" 
+                  multiple 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} pr-8`} 
+                  style={inputStyle} 
+                  disabled={isSubmitting}
+                />
                 <button
                   type="button"
-                  onClick={() => handleCameraCapture('other_attachments')}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gold hover:text-gold-dark transition-colors text-2xl"
+                  onClick={() => !isSubmitting && handleCameraCapture('other_attachments')}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-yellow-500 hover:text-yellow-600 transition-colors text-2xl disabled:opacity-50"
                   title="التقاط صورة بالكاميرا"
+                  disabled={isSubmitting}
                 >
                   📷
                 </button>
@@ -929,15 +1257,24 @@ const AddNewMerchant: React.FC = () => {
           </div>
           <div className="flex flex-col gap-3 mt-4">
             <button
-              className="w-full bg-gold text-brand-black py-3 rounded-lg font-bold hover:bg-gold-dark transition-colors duration-200"
+              className="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold hover:bg-yellow-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               type="submit"
+              disabled={isSubmitting}
             >
-              حفظ وانتقال لاضافه فرع
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+                  جاري الحفظ...
+                </>
+              ) : (
+                'حفظ وانتقال لاضافه فرع'
+              )}
             </button>
             <button
-              className="w-full bg-white border border-gold text-brand-green py-3 rounded-lg font-bold hover:bg-gold-light transition-colors duration-200"
+              className="w-full bg-white border border-yellow-500 text-green-800 py-3 rounded-lg font-bold hover:bg-green-50 transition-colors duration-200 disabled:opacity-50"
               type="button"
               onClick={() => navigate('/merchants')}
+              disabled={isSubmitting}
             >
               إلغاء
             </button>
@@ -951,8 +1288,40 @@ const AddNewMerchant: React.FC = () => {
           isOpen={!!cameraField}
         />
       )}
+      
+      <style jsx>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+        
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default AddNewMerchant; 
+export default AddNewMerchant;
