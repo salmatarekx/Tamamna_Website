@@ -1,6 +1,46 @@
 import React, { useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+// Snackbar Component for Error Messages
+const Snackbar: React.FC<{
+  message: string;
+  type: 'error' | 'success' | 'warning';
+  isVisible: boolean;
+  onClose: () => void;
+}> = ({ message, type, isVisible, onClose }) => {
+  React.useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // Auto close after 5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
+  if (!isVisible) return null;
+
+  const bgColor = {
+    error: 'bg-red-500',
+    success: 'bg-green-500',
+    warning: 'bg-yellow-500'
+  }[type];
+
+  return (
+    <div className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-md animate-slide-in`}>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">{message}</span>
+        <button 
+          onClick={onClose}
+          className="ml-4 text-white hover:text-gray-200 text-lg font-bold"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // Camera Component
 const CameraCapture: React.FC<{
   onCapture: (file: File) => void;
@@ -132,7 +172,6 @@ const CameraCapture: React.FC<{
 const AddBranch: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Expect vendor info to be passed via navigation state
   const vendor = location.state?.vendor || {};
 
   const [form, setForm] = useState({
@@ -140,20 +179,27 @@ const AddBranch: React.FC = () => {
     city: '',
     district: '',
     address: '',
-    mobile: '', // رقم الهاتف
+    mobile: '',
     email: '',
     latitude: '',
     longitude: '',
-    location_url: '', // رابط الموقع الجغرافي
-    branch_photos: [] as File[], // صور الفرع
+    location_url: '',
+    branch_photos: [] as File[],
   });
+
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [selectedCountryCode, setSelectedCountryCode] = useState('+966'); // Default to Saudi Arabia
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+966');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [cameraField, setCameraField] = useState<string | null>(null);
+  
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    message: '',
+    type: 'error' as 'error' | 'success' | 'warning',
+    isVisible: false
+  });
 
-  // GCC Countries with calling codes
   const gccCountries = [
     { name: 'السعودية', code: '+966', flag: '🇸🇦' },
     { name: 'الإمارات', code: '+971', flag: '🇦🇪' },
@@ -163,55 +209,195 @@ const AddBranch: React.FC = () => {
     { name: 'عمان', code: '+968', flag: '🇴🇲' },
   ];
 
-  // Helper to update map link from lat/lng
+  const showSnackbar = (message: string, type: 'error' | 'success' | 'warning' = 'error') => {
+    setSnackbar({
+      message,
+      type,
+      isVisible: true
+    });
+  };
+
+  const hideSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, isVisible: false }));
+  };
+
   const updateMapFromLatLng = (lat: string, lng: string) => {
     if (lat && lng) {
-      setForm(prev => ({ ...prev, location_url: `https://www.google.com/maps?q=${lat},${lng}` }));
+      // Validate coordinates
+      const latNum = parseFloat(lat);
+      const lngNum = parseFloat(lng);
+      
+      if (isNaN(latNum) || isNaN(lngNum)) {
+        showSnackbar('إحداثيات غير صحيحة', 'error');
+        return;
+      }
+      
+      // Check if coordinates are within reasonable bounds
+      if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+        showSnackbar('إحداثيات خارج النطاق المسموح', 'error');
+        return;
+      }
+      
+      // Generate a simple but effective Google Maps URL
+      const preciseUrl = `https://www.google.com/maps?q=${latNum.toFixed(7)},${lngNum.toFixed(7)}`;
+      
+      setForm(prev => ({ 
+        ...prev, 
+        latitude: lat,
+        longitude: lng,
+        location_url: preciseUrl
+      }));
     }
   };
 
-  // Helper to update lat/lng from map link if possible
   const updateLatLngFromMap = (map: string) => {
-    const match = map.match(/maps\?q=([\d.\-]+),([\d.\-]+)/);
+    // Handle different Google Maps URL formats
+    let match = null;
+    
+    // Try the data format first: !3dlat!4dlng (most precise)
+    match = map.match(/!3d([\d.\-]+)!4d([\d.\-]+)/);
+    
+    if (!match) {
+      // Try the @lat,lng format in the URL
+      match = map.match(/@([\d.\-]+),([\d.\-]+)/);
+    }
+    
+    if (!match) {
+      // Try simple q=lat,lng format
+      match = map.match(/maps\?q=([\d.\-]+),([\d.\-]+)/);
+    }
+    
+    if (!match) {
+      // Try coordinates in place path
+      match = map.match(/maps\/place\/([\d.\-]+),([\d.\-]+)/);
+    }
+    
+    if (!match) {
+      // Try the most precise format: maps/place/.../@lat,lng
+      match = map.match(/maps\/place\/.*@([\d.\-]+),([\d.\-]+)/);
+    }
+    
     if (match) {
-      setForm(prev => ({ ...prev, latitude: match[1], longitude: match[2], location_url: map }));
+      const lat = match[1];
+      const lng = match[2];
+      
+      // Validate the extracted coordinates
+      const latNum = parseFloat(lat);
+      const lngNum = parseFloat(lng);
+      
+      if (!isNaN(latNum) && !isNaN(lngNum) && 
+          latNum >= -90 && latNum <= 90 && 
+          lngNum >= -180 && lngNum <= 180) {
+        setForm(prev => ({ 
+          ...prev, 
+          latitude: lat, 
+          longitude: lng, 
+          location_url: map 
+        }));
+        showSnackbar('تم استخراج الإحداثيات من الرابط بنجاح', 'success');
+      } else {
+        showSnackbar('إحداثيات غير صحيحة في الرابط', 'error');
+      }
     } else {
       setForm(prev => ({ ...prev, location_url: map }));
+      showSnackbar('لم يتم العثور على إحداثيات في الرابط', 'warning');
     }
   };
 
-  // Geolocation fetch
   const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const lat = pos.coords.latitude.toString();
-          const lng = pos.coords.longitude.toString();
-          setForm(prev => ({ ...prev, latitude: lat, longitude: lng }));
-          updateMapFromLatLng(lat, lng);
-        },
-        err => alert('تعذر الحصول على الموقع الجغرافي')
-      );
-    } else {
-      alert('المتصفح لا يدعم تحديد الموقع');
+    if (!navigator.geolocation) {
+      showSnackbar('المتصفح لا يدعم تحديد الموقع');
+      return;
     }
+
+    // Show loading message
+    showSnackbar('جاري تحديد الموقع...', 'warning');
+
+    const options = {
+      enableHighAccuracy: true,  // Request high accuracy
+      timeout: 15000,           // 15 second timeout
+      maximumAge: 0             // Don't use cached location
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+
+        // Check if accuracy is good enough (less than 50 meters)
+        if (accuracy > 50) {
+          showSnackbar(`دقة الموقع منخفضة (${Math.round(accuracy)} متر). قد تكون الإحداثيات غير دقيقة. يرجى التحقق من الإحداثيات أو إدخالها يدوياً.`, 'warning');
+        }
+
+        // Format coordinates to 6 decimal places for better precision
+        const formattedLat = lat.toFixed(6);
+        const formattedLng = lng.toFixed(6);
+
+        updateMapFromLatLng(formattedLat, formattedLng);
+        
+        const accuracyMessage = accuracy <= 50 
+          ? 'تم تحديد الموقع بدقة عالية' 
+          : `تم تحديد الموقع بدقة ${Math.round(accuracy)} متر - يرجى التحقق من الدقة`;
+        
+        showSnackbar(accuracyMessage, accuracy <= 50 ? 'success' : 'warning');
+      },
+      (err) => {
+        let errorMessage = 'تعذر الحصول على الموقع الجغرافي';
+        
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            errorMessage = 'تم رفض إذن تحديد الموقع. يرجى السماح بالوصول إلى الموقع في إعدادات المتصفح أو إدخال الإحداثيات يدوياً.';
+            break;
+          case err.POSITION_UNAVAILABLE:
+            errorMessage = 'معلومات الموقع غير متوفرة حالياً. يرجى إدخال الإحداثيات يدوياً.';
+            break;
+          case err.TIMEOUT:
+            errorMessage = 'انتهت مهلة تحديد الموقع. يرجى المحاولة مرة أخرى أو إدخال الإحداثيات يدوياً.';
+            break;
+          default:
+            errorMessage = 'حدث خطأ غير متوقع أثناء تحديد الموقع. يرجى إدخال الإحداثيات يدوياً.';
+        }
+        
+        showSnackbar(errorMessage, 'error');
+      },
+      options
+    );
   };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, files } = e.target;
+    
     if (type === 'file' && files) {
       if (name === 'branch_photos') {
         setForm(prev => ({ ...prev, [name]: Array.from(files) }));
-      } else {
-        setForm(prev => ({ ...prev, [name]: value }));
       }
-    } else if (name === 'mobile') {
-      // Only allow digits and limit to 9 characters
+    } 
+    else if (name === 'mobile') {
       const digitsOnly = value.replace(/\D/g, '');
       if (digitsOnly.length <= 9) {
         setForm(prev => ({ ...prev, [name]: digitsOnly }));
       }
-    } else {
+    } 
+    else if (name === 'location_url') {
+      updateLatLngFromMap(value);
+    }
+    else if (name === 'latitude' || name === 'longitude') {
+      // Handle manual coordinate input
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setForm(prev => ({ ...prev, [name]: value }));
+        // Update location URL if both coordinates are available
+        if (name === 'latitude' && form.longitude) {
+          updateMapFromLatLng(value, form.longitude);
+        } else if (name === 'longitude' && form.latitude) {
+          updateMapFromLatLng(form.latitude, value);
+        }
+      } else if (value === '') {
+        setForm(prev => ({ ...prev, [name]: value }));
+      }
+    }
+    else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
   };
@@ -236,24 +422,27 @@ const AddBranch: React.FC = () => {
     e.preventDefault();
     setShowSuccess(false);
     setErrors({});
+    
+    // Basic validation
     const newErrors: { [key: string]: string } = {};
     if (!form.branchName) newErrors.branchName = 'اسم الفرع مطلوب';
     if (!form.city) newErrors.city = 'المدينة مطلوبة';
     if (!form.mobile) newErrors.mobile = 'رقم الهاتف مطلوب';
     if (!vendor.idOrCR && !vendor.id) newErrors.vendor = 'رقم التاجر غير متوفر';
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'البريد الإلكتروني غير صالح';
-    if (form.latitude && isNaN(Number(form.latitude))) newErrors.latitude = 'خط العرض يجب أن يكون رقمًا';
-    if (form.longitude && isNaN(Number(form.longitude))) newErrors.longitude = 'خط الطول يجب أن يكون رقمًا';
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      showSnackbar('الرجاء إكمال الحقول المطلوبة');
       return;
     }
+
     const token = localStorage.getItem('agent_token');
     if (!vendor.idOrCR && !vendor.id) {
-      alert('يجب اختيار تاجر لإضافة فرع');
+      showSnackbar('يجب اختيار تاجر لإضافة فرع');
       return;
     }
-    // Prepare FormData for file upload
+
     const formData = new FormData();
     formData.append('vendor_id', vendor.idOrCR || vendor.id);
     formData.append('name', form.branchName);
@@ -263,42 +452,41 @@ const AddBranch: React.FC = () => {
     if (form.location_url) formData.append('location_url', form.location_url);
     formData.append('city', form.city);
     if (form.district) formData.append('district', form.district);
-    if (form.branch_photos && form.branch_photos.length > 0) {
-      form.branch_photos.forEach(file => formData.append('branch_photos[]', file));
-    }
+    form.branch_photos.forEach(file => formData.append('branch_photos[]', file));
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/branches`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
+
       if (res.ok) {
         setShowSuccess(true);
-        setTimeout(() => {
-          setShowSuccess(false);
-          navigate('/merchants');
-        }, 2000);
+        showSnackbar('تم إضافة الفرع بنجاح', 'success');
+        setTimeout(() => navigate('/merchants'), 2000);
       } else {
         const data = await res.json();
+        
         if (data.errors) {
           const apiErrors: { [key: string]: string } = {};
           Object.keys(data.errors).forEach(key => {
             apiErrors[key] = Array.isArray(data.errors[key]) ? data.errors[key][0] : data.errors[key];
           });
           setErrors(apiErrors);
+          showSnackbar('راجع الحقول المطلوبة');
         } else {
-          alert(data.message || 'فشل في إضافة الفرع');
+          showSnackbar(data.message || 'فشل في إضافة الفرع');
         }
       }
     } catch (err) {
-      alert('حدث خطأ أثناء الاتصال بالخادم');
+      showSnackbar('حدث خطأ أثناء الاتصال بالخادم');
     }
   };
 
   const inputClass = "w-full px-3 py-2 border border-gold rounded-lg bg-gold-light text-brand-green focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold font-normal";
-  // Close dropdown when clicking outside
+  const inputStyle = { backgroundColor: '#d6f1e9' };
+
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
@@ -308,20 +496,25 @@ const AddBranch: React.FC = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const inputStyle = { backgroundColor: '#d6f1e9' };
 
   return (
     <div className="p-4 max-w-4xl mx-auto mt-16" dir="rtl">
+      {/* Success Message */}
       {showSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 text-center font-bold text-lg shadow">
           تم الحفظ بنجاح
         </div>
       )}
+
+      {/* Snackbar for errors */}
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        isVisible={snackbar.isVisible}
+        onClose={hideSnackbar}
+      />
       
       {/* Fixed Back Button - Always visible at top with proper spacing */}
       <div className="mb-4 sticky top-4 z-10 bg-white py-2">
@@ -333,33 +526,72 @@ const AddBranch: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm animate-fade-in">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm animate-fade-in max-h-[80vh] overflow-y-auto">
         <h3 className="text-lg font-bold mb-4 text-teal-700">إضافة فرع جديد</h3>
+        
         {vendor && (
           <div className="mb-4 p-2 bg-gold-light rounded text-brand-green font-bold text-center">
             التاجر: {vendor.commercial_name || vendor.tradeName || vendor.owner_name || ''}
           </div>
         )}
+
         <form className="space-y-3" onSubmit={handleSave}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Branch Name */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">اسم الفرع</label>
-              <input name="branchName" value={form.branchName} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="اسم الفرع" />
+              <input 
+                name="branchName" 
+                value={form.branchName} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="اسم الفرع" 
+              />
               {errors.branchName && <div className="text-red-600 text-sm mt-1">{errors.branchName}</div>}
             </div>
+
+            {/* City */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">المدينة</label>
-              <input name="city" value={form.city} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="المدينة" />
+              <input 
+                name="city" 
+                value={form.city} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="المدينة" 
+              />
               {errors.city && <div className="text-red-600 text-sm mt-1">{errors.city}</div>}
             </div>
+
+            {/* District */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">الحي</label>
-              <input name="district" value={form.district} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="الحي" />
+              <input 
+                name="district" 
+                value={form.district} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="الحي" 
+              />
             </div>
+
+            {/* Address */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">العنوان</label>
-              <input name="address" value={form.address} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="العنوان" />
+              <input 
+                name="address" 
+                value={form.address} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="العنوان" 
+              />
             </div>
+
+            {/* Phone Number */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">رقم الهاتف</label>
               <div className="relative">
@@ -420,32 +652,117 @@ const AddBranch: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Email */}
             <div>
               <label className="block mb-1 font-bold text-gray-700">البريد الإلكتروني</label>
-              <input name="email" value={form.email} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="البريد الإلكتروني" />
+              <input 
+                name="email" 
+                value={form.email} 
+                onChange={handleFormChange} 
+                className={inputClass} 
+                style={inputStyle} 
+                placeholder="البريد الإلكتروني" 
+              />
               {errors.email && <div className="text-red-600 text-sm mt-1">{errors.email}</div>}
             </div>
-            <div>
-              <label className="block mb-1 font-bold text-gray-700">خط العرض (Latitude)</label>
-              <input name="latitude" value={form.latitude} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="Latitude" />
-              {errors.latitude && <div className="text-red-600 text-sm mt-1">{errors.latitude}</div>}
+
+            {/* Location Fields */}
+            <div className="md:col-span-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-bold text-gray-700 mb-3 text-center">معلومات الموقع الجغرافي</h4>
+                
+                {/* Location Button */}
+                <div className="flex justify-center mb-3">
+                  <button 
+                    type="button" 
+                    onClick={handleGetLocation} 
+                    className="bg-gold text-brand-black px-4 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors flex items-center gap-2 text-sm"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.93l-.71-.71M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                    تحديد الموقع الحالي
+                  </button>
+                </div>
+                
+                {/* Manual Coordinate Input */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">خط العرض (Latitude)</label>
+                    <input 
+                      name="latitude" 
+                      value={form.latitude} 
+                      onChange={handleFormChange} 
+                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white" 
+                      placeholder="مثال: 24.7136" 
+                      type="number"
+                      step="any"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">خط الطول (Longitude)</label>
+                    <input 
+                      name="longitude" 
+                      value={form.longitude} 
+                      onChange={handleFormChange} 
+                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white" 
+                      placeholder="مثال: 46.6753" 
+                      type="number"
+                      step="any"
+                    />
+                  </div>
+                </div>
+                
+                {/* Update Coordinates Button */}
+                <div className="text-center mb-3">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (form.latitude && form.longitude) {
+                        updateMapFromLatLng(form.latitude, form.longitude);
+                        showSnackbar('تم تحديث الإحداثيات بنجاح', 'success');
+                      } else {
+                        showSnackbar('يرجى إدخال خط العرض وخط الطول أولاً', 'warning');
+                      }
+                    }}
+                    className="bg-green-500 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-600 transition-colors"
+                  >
+                    تحديث الإحداثيات
+                  </button>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block mb-1 font-bold text-gray-700">خط الطول (Longitude)</label>
-              <input name="longitude" value={form.longitude} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="Longitude" />
-              {errors.longitude && <div className="text-red-600 text-sm mt-1">{errors.longitude}</div>}
-            </div>
-            {/* Replace the button's container div with a full-width, centered flexbox */}
-            <div className="md:col-span-2 flex justify-center items-center my-2">
-              <button type="button" onClick={handleGetLocation} className="bg-gold text-brand-black px-3 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.93l-.71-.71M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
-                تحديد الموقع الحالي
-              </button>
-            </div>
+
+            {/* Map URL */}
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">رابط الموقع الجغرافي (Google Maps)</label>
-              <input name="location_url" value={form.location_url} onChange={handleFormChange} className={inputClass} style={inputStyle} placeholder="رابط الموقع الجغرافي" />
+              <div className="flex gap-2">
+                <input 
+                  name="location_url" 
+                  value={form.location_url} 
+                  onChange={handleFormChange} 
+                  className={`${inputClass} flex-1`} 
+                  style={inputStyle} 
+                  placeholder="انسخ رابط الموقع من خرائط جوجل وألصقه هنا" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    if (form.location_url) {
+                      updateLatLngFromMap(form.location_url);
+                    } else {
+                      showSnackbar('يرجى إدخال رابط خرائط جوجل أولاً', 'warning');
+                    }
+                  }}
+                  className="bg-blue-500 text-white px-3 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors text-sm"
+                >
+                  استخراج الإحداثيات
+                </button>
+              </div>
             </div>
+
+            {/* Photos */}
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">صور الفرع (يمكن اختيار أكثر من صورة)</label>
               <div className="relative">
@@ -464,7 +781,10 @@ const AddBranch: React.FC = () => {
               )}
             </div>
           </div>
+
           {errors.vendor && <div className="text-red-600 text-sm mt-1">{errors.vendor}</div>}
+
+          {/* Form Actions */}
           <div className="flex gap-2 mt-4 justify-center">
             <button
               className="bg-gold text-brand-black px-6 py-2 rounded-xl font-bold shadow hover:bg-gold-dark hover:text-brand-white transition-colors duration-200 text-lg min-w-[120px]"
@@ -495,4 +815,4 @@ const AddBranch: React.FC = () => {
   );
 };
 
-export default AddBranch; 
+export default AddBranch;

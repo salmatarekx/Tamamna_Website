@@ -25,15 +25,16 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
       .catch(() => setPackages([]));
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitForm = async (skipPackage = false) => {
     setLoading(true);
     setError('');
     const token = localStorage.getItem('agent_token');
     const formData = new FormData();
     
     // Process form data with proper type checking
-    Object.entries({ ...form, package_id: selected }).forEach(([key, value]) => {
+    const formDataToSubmit = skipPackage ? form : { ...form, package_id: selected };
+    
+    Object.entries(formDataToSubmit).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '') {
         if (
           key === 'audio_recording' ||
@@ -73,8 +74,8 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
       }
     }
 
-    // Validate required fields before submission
-    if (!selected) {
+    // Validate required fields before submission (only if not skipping)
+    if (!skipPackage && !selected) {
       setError('الرجاء اختيار باقة');
       setLoading(false);
       return;
@@ -131,6 +132,15 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitForm(false);
+  };
+
+  const handleSkip = async () => {
+    await submitForm(true);
+  };
+
   return (
     <div>
       {showSnackbar && (
@@ -177,12 +187,28 @@ const PackageSelection: React.FC<Props> = ({ form, merchant, branch }) => {
             );
           })}
         </div>
-        <button type="submit" className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors duration-200" disabled={loading || !selected}>
-          {loading ? 'جاري الحفظ...' : 'تأكيد الاشتراك'}
-        </button>
+        
+        <div className="space-y-3">
+          <button 
+            type="submit" 
+            className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors duration-200" 
+            disabled={loading || !selected}
+          >
+            {loading ? 'جاري الحفظ...' : 'تأكيد الاشتراك'}
+          </button>
+          
+          <button 
+            type="button"
+            onClick={handleSkip}
+            className="w-full bg-gray-500 text-white py-3 px-4 rounded-lg hover:bg-gray-600 transition-colors duration-200"
+            disabled={loading}
+          >
+            {loading ? 'جاري الحفظ...' : 'تخطي'}
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
-export default PackageSelection; 
+export default PackageSelection;
