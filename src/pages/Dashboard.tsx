@@ -7,6 +7,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [summary, setSummary] = useState<any>(null);
+  const [vendors, setVendors] = useState<any[]>([]);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -14,6 +15,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   useEffect(() => {
     const token = localStorage.getItem('agent_token');
     setLoading(true);
+    
+    // Fetch summary data
     fetch(`${import.meta.env.VITE_API_URL}/api/home/summary`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -25,6 +28,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       .catch(() => {
         setError('فشل في جلب البيانات');
         setLoading(false);
+      });
+
+    // Fetch vendors data
+    fetch(`${import.meta.env.VITE_API_URL}/api/vendors`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setVendors(data.data || []);
+      })
+      .catch(err => {
+        console.error('Error fetching vendors:', err);
       });
   }, []);
 
@@ -47,12 +62,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
           <span className="text-gold text-2xl mb-1">👥</span>
           <span className="text-xl font-bold text-brand-green">{summary?.vendor_count ?? '-'}</span>
-          <span className="text-xs text-brand-green mt-1">عدد التجار</span>
+          <span className="text-xs text-brand-green mt-1">عدد التجار الحالي</span>
         </div>
         <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
           <span className="text-gold text-2xl mb-1">🏢</span>
           <span className="text-xl font-bold text-brand-green">{summary?.branch_count ?? '-'}</span>
-          <span className="text-xs text-brand-green mt-1">عدد الفروع</span>
+          <span className="text-xs text-brand-green mt-1">عدد الفروع الحاليه</span>
         </div>
         <div className="bg-brand-white rounded-lg shadow-md border border-gold p-4 text-center flex flex-col items-center">
           <span className="text-gold text-2xl mb-1">⭐</span>
@@ -100,9 +115,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         ) : <div className="text-gray-500">لا يوجد بيانات تاجر حديثة</div>}
       </div>
 
-      {/* أحدث الفروع */}
+      {/* الفروع الحاليه */}
       <div className="mb-8">
-        <h6 className="text-lg font-semibold text-brand-green mb-4">أحدث الفروع</h6>
+        <h6 className="text-lg font-semibold text-brand-green mb-4">الفروع الحاليه</h6>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {summary?.latest_branches?.map((branch: any) => (
             <div
@@ -118,6 +133,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* التجار الحالين */}
+      <div className="mb-8">
+        <h6 className="text-lg font-semibold text-brand-green mb-4">التجار الحالين</h6>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {vendors.slice(0, 6).map((vendor: any) => (
+            <div
+              key={vendor.id}
+              className="bg-brand-white rounded-lg shadow-md border border-gold p-4 cursor-pointer hover:bg-gold-light transition"
+              onClick={() => navigate(`/merchant/${vendor.id}`)}
+            >
+              <div className="font-bold text-lg text-gold mb-1">{vendor.commercial_name || vendor.owner_name}</div>
+              <div className="text-brand-green mb-1">رقم السجل التجاري: {vendor.commercial_registration_number}</div>
+              <div className="text-brand-green mb-1">الجوال: {vendor.mobile}</div>
+              <div className="text-brand-green mb-1">المدينة: {vendor.city} - {vendor.district}</div>
+              <div className="text-brand-green mb-1">البريد الإلكتروني: {vendor.email}</div>
+              <div className="text-brand-green mb-1">نوع النشاط: {vendor.activity_type}</div>
+              <div className="text-brand-green mb-1">تاريخ الإنشاء: {vendor.created_at?.split('T')[0]}</div>
+            </div>
+          ))}
+        </div>
+        {vendors.length === 0 && (
+          <div className="text-gray-500 text-center">لا يوجد تجار حالياً</div>
+        )}
       </div>
 
       {/* بيانات المندوب */}

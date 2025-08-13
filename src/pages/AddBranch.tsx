@@ -1,5 +1,133 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+// Camera Component
+const CameraCapture: React.FC<{
+  onCapture: (file: File) => void;
+  onClose: () => void;
+  isOpen: boolean;
+}> = ({ onCapture, onClose, isOpen }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment', // Use back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      setIsCameraActive(true);
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      alert('تعذر الوصول إلى الكاميرا. يرجى السماح بالوصول إلى الكاميرا.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `camera_photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            onCapture(file);
+            stopCamera();
+            onClose();
+          }
+        }, 'image/jpeg', 0.8);
+      }
+    }
+  };
+
+  const handleOpen = () => {
+    if (isOpen) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+  };
+
+  React.useEffect(() => {
+    handleOpen();
+    return () => {
+      stopCamera();
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-4 max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-brand-green">التقاط صورة</h3>
+          <button
+            onClick={() => {
+              stopCamera();
+              onClose();
+            }}
+            className="text-gray-500 hover:text-gray-700 text-xl"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div className="relative">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-full rounded-lg"
+            style={{ transform: 'scaleX(-1)' }} // Mirror the video
+          />
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+        
+        <div className="flex justify-center gap-4 mt-4">
+          <button
+            onClick={capturePhoto}
+            className="bg-gold text-white px-6 py-2 rounded-lg font-bold hover:bg-gold-dark transition-colors"
+          >
+            📸 التقاط الصورة
+          </button>
+          <button
+            onClick={() => {
+              stopCamera();
+              onClose();
+            }}
+            className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-400 transition-colors"
+          >
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AddBranch: React.FC = () => {
   const navigate = useNavigate();
@@ -23,6 +151,7 @@ const AddBranch: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedCountryCode, setSelectedCountryCode] = useState('+966'); // Default to Saudi Arabia
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [cameraField, setCameraField] = useState<string | null>(null);
 
   // GCC Countries with calling codes
   const gccCountries = [
@@ -85,6 +214,22 @@ const AddBranch: React.FC = () => {
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleCameraCapture = (fieldName: string) => {
+    setCameraField(fieldName);
+  };
+
+  const handleCameraCaptureComplete = (file: File) => {
+    setForm(prev => ({ 
+      ...prev, 
+      branch_photos: [...prev.branch_photos, file] 
+    }));
+    setCameraField(null);
+  };
+
+  const handleCameraClose = () => {
+    setCameraField(null);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -171,19 +316,24 @@ const AddBranch: React.FC = () => {
   const inputStyle = { backgroundColor: '#d6f1e9' };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto" dir="rtl">
+    <div className="p-4 max-w-4xl mx-auto mt-16" dir="rtl">
       {showSuccess && (
         <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 text-center font-bold text-lg shadow">
           تم الحفظ بنجاح
         </div>
       )}
-      <button
-        className="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
-        onClick={() => navigate('/merchants')}
-      >
-        ← العودة إلى قائمة التجار
-      </button>
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm animate-fade-in max-h-[80vh] overflow-y-auto">
+      
+      {/* Fixed Back Button - Always visible at top with proper spacing */}
+      <div className="mb-4 sticky top-4 z-10 bg-white py-2">
+        <button
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors"
+          onClick={() => navigate('/merchants')}
+        >
+          ← العودة إلى قائمة التجار
+        </button>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm animate-fade-in">
         <h3 className="text-lg font-bold mb-4 text-teal-700">إضافة فرع جديد</h3>
         {vendor && (
           <div className="mb-4 p-2 bg-gold-light rounded text-brand-green font-bold text-center">
@@ -298,7 +448,20 @@ const AddBranch: React.FC = () => {
             </div>
             <div className="md:col-span-2">
               <label className="block mb-1 font-bold text-gray-700">صور الفرع (يمكن اختيار أكثر من صورة)</label>
-              <input name="branch_photos" type="file" accept="image/*" multiple onChange={handleFormChange} className={inputClass} style={inputStyle} />
+              <div className="relative">
+                <input name="branch_photos" type="file" accept="image/*" multiple onChange={handleFormChange} className={`${inputClass} pr-8`} style={inputStyle} />
+                <button
+                  type="button"
+                  onClick={() => handleCameraCapture('branch_photos')}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gold hover:text-gold-dark transition-colors text-2xl"
+                  title="التقاط صورة بالكاميرا"
+                >
+                  📷
+                </button>
+              </div>
+              {form.branch_photos && form.branch_photos.length > 0 && (
+                <div className="mt-2 text-sm text-green-600">✓ تم اختيار {form.branch_photos.length} صورة</div>
+              )}
             </div>
           </div>
           {errors.vendor && <div className="text-red-600 text-sm mt-1">{errors.vendor}</div>}
@@ -319,6 +482,15 @@ const AddBranch: React.FC = () => {
           </div>
         </form>
       </div>
+      
+      {/* Camera Modal */}
+      {cameraField && (
+        <CameraCapture
+          onCapture={handleCameraCaptureComplete}
+          onClose={handleCameraClose}
+          isOpen={!!cameraField}
+        />
+      )}
     </div>
   );
 };
