@@ -432,7 +432,7 @@ const AddNewMerchant: React.FC = () => {
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     
-    // Required field validations
+    // Only keep essential required field validations
     if (!form.owner_name) {
       newErrors.owner_name = 'اسم صاحب النشاط مطلوب';
     }
@@ -441,49 +441,23 @@ const AddNewMerchant: React.FC = () => {
       newErrors.mobile = 'رقم الجوال مطلوب';
     }
     
-    if (!form.whatsapp) {
-      newErrors.whatsapp = 'رقم الواتساب مطلوب';
-    }
-    
-    if (!form.city) {
-      newErrors.city = 'المدينة مطلوبة';
-    }
-    
-    if (!form.has_commercial_registration) {
-      newErrors.has_commercial_registration = 'هل يوجد سجل تجاري؟ مطلوب';
-    }
-    
-    if (!form.activity_type) {
-      newErrors.activity_type = 'نوع النشاط مطلوب';
-    }
-    
     if (!form.commercial_name) {
       newErrors.commercial_name = 'الاسم التجاري مطلوب';
     }
     
-    if (!form.email) {
-      newErrors.email = 'البريد الإلكتروني مطلوب';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    // Email validation (only if provided)
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = 'البريد الإلكتروني غير صحيح';
     }
     
-    // Commercial registration number validation
-    if (!form.commercial_registration_number) {
-      newErrors.commercial_registration_number = 'رقم السجل التجاري مطلوب';
-    } else if (form.commercial_registration_number.length !== 10) {
+    // Commercial registration number validation (only if provided)
+    if (form.commercial_registration_number && form.commercial_registration_number.length !== 10) {
       newErrors.commercial_registration_number = 'رقم السجل التجاري يجب أن يكون 10 أرقام بالضبط';
     }
     
-    // ID number validation
-    if (!form.id_number) {
-      newErrors.id_number = 'رقم الهوية مطلوب';
-    } else if (form.id_number.length !== 10) {
+    // ID number validation (only if provided)
+    if (form.id_number && form.id_number.length !== 10) {
       newErrors.id_number = 'رقم الهوية يجب أن يكون 10 أرقام بالضبط';
-    }
-    
-    // License number validation
-    if (!form.license_number) {
-      newErrors.license_number = 'رقم الرخصة مطلوب';
     }
     
     setErrors(newErrors);
@@ -666,20 +640,17 @@ const AddNewMerchant: React.FC = () => {
               )}
             </div>
             <div>
-              <label className="block mb-1 font-bold text-gray-700">رقم السجل التجاري *</label>
+              <label className="block mb-1 font-bold text-gray-700">رقم السجل التجاري</label>
               <input 
                 name="commercial_registration_number" 
                 value={form.commercial_registration_number} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.commercial_registration_number ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle} 
                 placeholder="10 أرقام فقط" 
                 maxLength={10}
                 disabled={isSubmitting}
               />
-              {errors.commercial_registration_number && (
-                <div className="mt-1 text-sm text-red-600">{errors.commercial_registration_number}</div>
-              )}
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">رقم الجوال *</label>
@@ -744,38 +715,32 @@ const AddNewMerchant: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="block mb-1 font-bold text-gray-700">رقم الهويه *</label>
+              <label className="block mb-1 font-bold text-gray-700">رقم الهويه</label>
               <input 
                 name="id_number" 
                 value={form.id_number} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.id_number ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle} 
                 placeholder="10 أرقام فقط" 
                 maxLength={10}
                 disabled={isSubmitting}
               />
-              {errors.id_number && (
-                <div className="mt-1 text-sm text-red-600">{errors.id_number}</div>
-              )}
             </div>
             <div>
-              <label className="block mb-1 font-bold text-gray-700">رقم الرخصه *</label>
+              <label className="block mb-1 font-bold text-gray-700">رقم الرخصه</label>
               <input 
                 name="license_number" 
                 value={form.license_number} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.license_number ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle} 
                 placeholder="رقم الرخصه" 
                 disabled={isSubmitting}
               />
-              {errors.license_number && (
-                <div className="mt-1 text-sm text-red-600">{errors.license_number}</div>
-              )}
             </div>
             <div>
-              <label className="block mb-1 font-bold text-gray-700">واتساب *</label>
+              <label className="block mb-1 font-bold text-gray-700">واتساب</label>
               <div className="relative">
                 <div className="flex">
                   {/* WhatsApp Country Code Selector */}
@@ -819,7 +784,7 @@ const AddNewMerchant: React.FC = () => {
                     name="whatsapp" 
                     value={form.whatsapp} 
                     onChange={handleFormChange} 
-                    className={`flex-1 px-3 py-2 border border-yellow-400 border-r-0 rounded-l-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal ${errors.whatsapp ? 'border-red-500' : ''}`}
+                    className="flex-1 px-3 py-2 border border-yellow-400 border-r-0 rounded-l-lg bg-green-50 text-green-800 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-400 font-normal"
                     style={{ backgroundColor: '#d6f1e9' }}
                     placeholder="9 أرقام فقط" 
                     maxLength={9}
@@ -831,9 +796,6 @@ const AddNewMerchant: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {errors.whatsapp && (
-                  <div className="mt-1 text-sm text-red-600">{errors.whatsapp}</div>
-                )}
               </div>
             </div>
             <div>
@@ -861,20 +823,17 @@ const AddNewMerchant: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block mb-1 font-bold text-gray-700">البريد الإلكتروني *</label>
+              <label className="block mb-1 font-bold text-gray-700">البريد الإلكتروني</label>
               <input 
                 name="email" 
                 value={form.email} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.email ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle} 
                 placeholder="البريد الإلكتروني" 
                 type="email"
                 disabled={isSubmitting}
               />
-              {errors.email && (
-                <div className="mt-1 text-sm text-red-600">{errors.email}</div>
-              )}
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">رابط الموقع الجغرافي (Google Maps)</label>
@@ -921,19 +880,16 @@ const AddNewMerchant: React.FC = () => {
               )}
             </div>
             <div>
-              <label className="block mb-1 font-bold text-gray-700">المدينة *</label>
+              <label className="block mb-1 font-bold text-gray-700">المدينة</label>
               <input 
                 name="city" 
                 value={form.city} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.city ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle} 
                 placeholder="المدينة" 
                 disabled={isSubmitting}
               />
-              {errors.city && (
-                <div className="mt-1 text-sm text-red-600">{errors.city}</div>
-              )}
             </div>
             <div>
               <label className="block mb-1 font-bold text-gray-700">الحي</label>
@@ -961,12 +917,12 @@ const AddNewMerchant: React.FC = () => {
             </div>
             {/* Activity Type Field */}
             <div>
-              <label className="block mb-1 font-bold text-gray-700">نوع النشاط *</label>
+              <label className="block mb-1 font-bold text-gray-700">نوع النشاط</label>
               <select 
                 name="activity_type" 
                 value={showCustomActivityType ? 'custom' : form.activity_type} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.activity_type ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle}
                 disabled={isSubmitting}
               >
@@ -980,14 +936,11 @@ const AddNewMerchant: React.FC = () => {
                   name="activity_type" 
                   value={form.activity_type} 
                   onChange={handleFormChange} 
-                  className={`${inputClass} mt-2 ${errors.activity_type ? 'border-red-500' : ''}`} 
+                  className={`${inputClass} mt-2`} 
                   style={inputStyle} 
                   placeholder="اكتب نوع النشاط المخصص..." 
                   disabled={isSubmitting}
                 />
-              )}
-              {errors.activity_type && (
-                <div className="mt-1 text-sm text-red-600">{errors.activity_type}</div>
               )}
             </div>
             <div>
@@ -1004,12 +957,12 @@ const AddNewMerchant: React.FC = () => {
             </div>
             {/* Commercial Registration Field */}
             <div>
-              <label className="block mb-1 font-bold text-gray-700">هل يوجد سجل تجاري؟ *</label>
+              <label className="block mb-1 font-bold text-gray-700">هل يوجد سجل تجاري؟</label>
               <select 
                 name="has_commercial_registration" 
                 value={showCustomCommercialRegistration ? 'custom' : form.has_commercial_registration} 
                 onChange={handleFormChange} 
-                className={`${inputClass} ${errors.has_commercial_registration ? 'border-red-500' : ''}`} 
+                className={inputClass} 
                 style={inputStyle}
                 disabled={isSubmitting}
               >
@@ -1023,14 +976,11 @@ const AddNewMerchant: React.FC = () => {
                   name="has_commercial_registration" 
                   value={form.has_commercial_registration} 
                   onChange={handleFormChange} 
-                  className={`${inputClass} mt-2 ${errors.has_commercial_registration ? 'border-red-500' : ''}`} 
+                  className={`${inputClass} mt-2`} 
                   style={inputStyle} 
                   placeholder="اكتب الإجابة المخصصة..." 
                   disabled={isSubmitting}
                 />
-              )}
-              {errors.has_commercial_registration && (
-                <div className="mt-1 text-sm text-red-600">{errors.has_commercial_registration}</div>
               )}
             </div>
             {/* Online Platform Field */}
@@ -1289,7 +1239,7 @@ const AddNewMerchant: React.FC = () => {
         />
       )}
       
-      <style jsx>{`
+      <style>{`
         @keyframes slide-in {
           from {
             transform: translateX(100%);

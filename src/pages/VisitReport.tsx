@@ -273,6 +273,7 @@ const VisitReport: React.FC = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         pos => {
+          console.log(pos);
           setForm(prev => ({ ...prev, gps_latitude: String(pos.coords.latitude), gps_longitude: String(pos.coords.longitude) }));
           setLocationCaptured(true);
         },

@@ -180,9 +180,44 @@ const Merchants: React.FC<MerchantProps> = ({ onNavigate }) => {
             className="bg-brand-white p-4 rounded-lg shadow-sm border border-brand-green cursor-pointer transition-shadow duration-200 hover:bg-gold-light hover:text-brand-green hover:shadow-lg"
             onClick={() => navigate(`/merchant/${merchant.id}`)}
           >
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
               <div className="flex-1">
-                <h6 className="font-semibold text-brand-green mb-2">{merchant.commercial_name || merchant.name}</h6>
+                <div className="flex items-center justify-between mb-2">
+                  <h6 className="font-semibold text-brand-green">{merchant.commercial_name || merchant.name}</h6>
+                  {/* Subscription Status Badge */}
+                  <div className="flex items-center">
+                    {merchant.has_active_subscription ? (
+                      <div className="flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                        نشط
+                      </div>
+                    ) : (
+                      <div className="flex items-center bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium">
+                        <span className="w-2 h-2 bg-gray-400 rounded-full mr-1"></span>
+                        غير نشط
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Package Information */}
+                {merchant.has_active_subscription && merchant.latest_package && (
+                  <div className="mb-2 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+                    <div className="flex items-center mb-1">
+                      <span className="mr-2 text-yellow-600">📦</span>
+                      <span className="text-yellow-800 font-bold text-sm">{merchant.latest_package.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-yellow-700">
+                      <span>السعر: {merchant.latest_package.price} ريال</span>
+                      <span>المدة: {merchant.latest_package.duration_in_days} يوم</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-yellow-600 mt-1">
+                      <span>الحد الأقصى: {merchant.latest_package.product_limit} منتج</span>
+                      <span>بدأ من: {new Date(merchant.latest_package.created_at).toLocaleDateString('ar-SA')}</span>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex items-center mb-2">
                   <span className="mr-2 text-gold">📞</span>
                   <span className="text-gold font-bold">{merchant.mobile}</span>
